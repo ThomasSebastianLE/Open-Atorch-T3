@@ -3,7 +3,7 @@
 🌐 **Project Website & Installation Guide:** https://thomassebastianle.github.io/Open-Atorch-T3/  
 📦 **GitHub Repository:** https://github.com/ThomasSebastianLE/Open-Atorch-T3
 
-This repository contains the hardware/firmware reverse-engineering documentation of the **ATORCH / JUWEI T3** (`AGENTS.md`), a reproducible **Docker-based Linux build environment** for the `pi32v2` architecture of the **JieLi AC707N**, the shared Board Support Package (`shared/t3-bsp`), and the open-source multimeter firmware (`projects/t3-meter-fw`).
+This repository contains the hardware/firmware documentation of the **ATORCH / JUWEI T3** (`AGENTS.md`), a reproducible **Docker-based Linux build environment** for the `pi32v2` architecture of the **JieLi AC707N**, the shared Board Support Package (`shared/t3-bsp`), and the open-source multimeter firmware (`projects/t3-meter-fw`).
 
 > [!CAUTION]
 > **Protect Stock Firmware & Factory Calibration:**
