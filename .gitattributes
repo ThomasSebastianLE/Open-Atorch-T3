@@ -1,0 +1,12 @@
+* text=auto eol=lf
+*.sh text eol=lf
+Makefile text eol=lf
+*.mk text eol=lf
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.bin binary
+*.ufw binary
+*.fw binary
+*.elf binary
+*.a binary
+*.o binary

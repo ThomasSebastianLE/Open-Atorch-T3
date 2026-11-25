@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>T3 OpenMeter — WebBLE Dashboard</title>
+  <style>
+    :root { --bg: #0b1018; --card: #111827; --border: #1e293b; --text: #e2e8f0; --muted: #94a3b8; }
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 16px; }
+    .top { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    h1 { font-size: 1.25rem; margin: 0; }
+    .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+    button { background: #0284c7; color: #fff; border: 0; border-radius: 6px; padding: 8px 14px; font-weight: 600; cursor: pointer; }
+    button.sec { background: #1e293b; }
+    button.warn { background: #b91c1c; }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+    .lbl { font-size: 0.78rem; color: var(--muted); }
+    .val { font-size: 1.45rem; font-weight: 700; margin-top: 4px; }
+    .v { color: #4ade80; } .i { color: #38bdf8; } .p { color: #facc15; }
+    canvas { width: 100%; height: 220px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; display: block; }
+    .status { font-size: 0.85rem; color: var(--muted); margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <h1>T3 OpenMeter — WebBLE Dashboard</h1>
+    <div class="btns">
+      <button id="btnConnect">Connect T3 (BLE)</button>
+      <button id="btnCsv" class="sec" disabled>Export CSV</button>
+      <button id="btnRst" class="warn" disabled>Reset Counters</button>
+      <button id="btnZero" class="sec" disabled>Zero I</button>
+      <button id="btnBank" class="sec" disabled>Switch Bank</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card"><div class="lbl">Voltage</div><div id="vVal" class="val v">0.00 V</div></div>
+    <div class="card"><div class="lbl">Current</div><div id="iVal" class="val i">0.00 A</div></div>
+    <div class="card"><div class="lbl">Power</div><div id="pVal" class="val p">0.00 W</div></div>
+    <div class="card"><div class="lbl">Capacity / 3.7V</div><div id="cVal" class="val">0 mAh</div></div>
+    <div class="card"><div class="lbl">Energy</div><div id="eVal" class="val">0.00 Wh</div></div>
+    <div class="card"><div class="lbl">Protocol / D+ / D- / Temp</div><div id="sVal" class="val" style="font-size:1.05rem;">--</div></div>
+  </div>
+
+  <canvas id="chart" width="800" height="220"></canvas>
+  <div id="status" class="status">Disconnected (requires Chrome on Desktop or Android).</div>
+
+  <script>
+    const SVC = 0xffe0, CHR_TX = 0xffe1, CHR_RX = 0xffe2;
+    let txChar = null, rxChar = null;
+    const history = [];
+    const maxPts = 120;
+
+    const $ = (id) => document.getElementById(id);
+    const canvas = $("chart"), ctx = canvas.getContext("2d");
+
+    function drawChart() {
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      if (history.length < 2) return;
+      const plot = (key, maxVal, color) => {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        history.forEach((pt, idx) => {
+          const x = (idx / (maxPts - 1)) * w;
+          const y = h - 10 - Math.min(1, pt[key] / maxVal) * (h - 20);
+          if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+      };
+      plot("v", 24, "#4ade80");
+      plot("i", 6, "#38bdf8");
+    }
+
+    async function sendCmd(cmd, arg = 0) {
+      const c = rxChar || txChar;
+      if (!c) return;
+      const pkt = new Uint8Array([0xff, 0x55, 0x11, 0x03, cmd, arg, 0, 0, 0, 0]);
+      let sum = 0;
+      for (let i = 2; i < 9; i++) sum += pkt[i];
+      pkt[9] = (sum & 0xff) ^ 0x44;
+      await c.writeValueWithoutResponse(pkt);
+    }
+
+    function detectProto(v, dp, dm) {
+      if (v > 16.5) return "PD/QC 20V";
+      if (v > 13.5) return "PD 15V";
+      if (v > 10.8) return "PD/QC 12V";
+      if (v > 7.8)  return "PD/QC 9V";
+      if (v > 5.6)  return "QC3.0/PPS";
+      if (dp > 2.5 && dm > 2.5) return "Apple 2.4A";
+      if (dp > 2.5 && dm > 1.8) return "Apple 1/2A";
+      if (dp > 1.8 && dm < 0.4) return "AFC/FCP";
+      if (dp > 0.4 && dm > 0.4 && Math.abs(dp - dm) < 0.2) return "DCP 1.5A";
+      if (dp > 0.4 && dm < 0.2) return "QC2.0 5V";
+      return "USB 5V";
+    }
+
+    function onNotify(ev) {
+      const d = new DataView(ev.target.value.buffer);
+      if (d.byteLength >= 36 && d.getUint8(0) === 0xff && d.getUint8(1) === 0x55) {
+        const v = ((d.getUint8(4) << 16) | (d.getUint8(5) << 8) | d.getUint8(6)) / 100;
+        const i = ((d.getUint8(7) << 16) | (d.getUint8(8) << 8) | d.getUint8(9)) / 100;
+        const p = v * i;
+        const mah = (d.getUint8(10) << 16) | (d.getUint8(11) << 8) | d.getUint8(12);
+        const wh = d.getUint32(13, false) / 100;
+        const dm = d.getUint16(17, false) / 100;
+        const dp = d.getUint16(19, false) / 100;
+        const temp = d.getUint16(21, false);
+        const mah37 = Math.round((wh * 1000) / 3.7);
+        const proto = detectProto(v, dp, dm);
+
+        $("vVal").textContent = v.toFixed(2) + " V";
+        $("iVal").textContent = i.toFixed(2) + " A";
+        $("pVal").textContent = p.toFixed(2) + " W";
+        $("cVal").textContent = `${mah} / ${mah37} mAh`;
+        $("eVal").textContent = wh.toFixed(2) + " Wh";
+        $("sVal").textContent = `${proto} | D+:${dp.toFixed(2)}V D-:${dm.toFixed(2)}V ${temp}°C`;
+
+        history.push({ t: new Date().toISOString(), v, i, p, mah, wh, dp, dm, temp, proto });
+        if (history.length > maxPts) history.shift();
+        $("btnCsv").disabled = false;
+        drawChart();
+      }
+    }
+
+    $("btnConnect").onclick = async () => {
+      try {
+        $("status").textContent = "Scanning for T3...";
+        const dev = await navigator.bluetooth.requestDevice({
+          filters: [{ services: [SVC] }, { namePrefix: "T3" }],
+          optionalServices: [SVC]
+        });
+        const srv = await dev.gatt.connect();
+        const svc = await srv.getPrimaryService(SVC);
+        txChar = await svc.getCharacteristic(CHR_TX);
+        try { rxChar = await svc.getCharacteristic(CHR_RX); } catch {}
+        await txChar.startNotifications();
+        txChar.addEventListener("characteristicvaluechanged", onNotify);
+        $("status").textContent = "Connected to " + (dev.name || "T3");
+        $("btnRst").disabled = $("btnZero").disabled = $("btnBank").disabled = false;
+      } catch (err) {
+        $("status").textContent = "Error: " + err.message;
+      }
+    };
+
+    $("btnRst").onclick = async () => { await sendCmd(0x01); await sendCmd(0x02); await sendCmd(0x03); };
+    $("btnZero").onclick = () => sendCmd(0x11);
+    $("btnBank").onclick = () => sendCmd(0x10);
+    $("btnCsv").onclick = () => {
+      const rows = ["time,V,A,W,mAh,Wh,Dp,Dm,TempC,Proto",
+        ...history.map(r => `${r.t},${r.v},${r.i},${r.p},${r.mah},${r.wh},${r.dp},${r.dm},${r.temp},${r.proto}`)];
+      const blob = new Blob([rows.join("\n")], { type: "text/csv" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "t3-meter-log.csv";
+      a.click();
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+[submodule "tools/jl-uboot-tool"]
+	path = tools/jl-uboot-tool
+	url = https://github.com/HeikkiRadu/jl-uboot-tool.git
+	branch = add-br35-ac707n

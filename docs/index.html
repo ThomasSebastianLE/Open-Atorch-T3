@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open-Atorch-T3 — Open-Source-Firmware für das ATORCH / JUWEI T3</title>
+  <meta name="description" content="Offene GPLv3 Custom-Firmware, Board-Support-Package, WebBLE-Dashboard und Recovery-Tools für das ATORCH / JUWEI T3 USB-C-Power-Meter (JieLi AC707N / BR35)." />
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --bg-elev: #121826;
+      --bg-card: #161e2e;
+      --border: #253047;
+      --text: #e6edf7;
+      --text-muted: #9aa8c2;
+      --accent: #38bdf8;
+      --accent-2: #818cf8;
+      --ok: #22c55e;
+      --ok-bg: rgba(34, 197, 94, 0.14);
+      --warn: #f59e0b;
+      --warn-bg: rgba(245, 158, 11, 0.14);
+      --info: #38bdf8;
+      --info-bg: rgba(56, 189, 248, 0.14);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.12);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      background: radial-gradient(1200px 600px at 15% -10%, rgba(56, 189, 248, 0.12), transparent 60%),
+                  radial-gradient(900px 500px at 85% 0%, rgba(129, 140, 248, 0.10), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Nav */
+    header.topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(12px);
+      background: rgba(11, 15, 23, 0.82);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--text);
+    }
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 12px var(--accent);
+    }
+    nav.navlinks {
+      display: flex;
+      gap: 20px;
+      font-size: 0.92rem;
+    }
+    nav.navlinks a { color: var(--text-muted); }
+    nav.navlinks a:hover { color: var(--text); text-decoration: none; }
+
+    /* Hero */
+    .hero {
+      padding: 64px 0 44px;
+      border-bottom: 1px solid var(--border);
+    }
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-elev);
+      color: var(--text-muted);
+    }
+    .badge.accent {
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .hero h1 {
+      margin: 0 0 14px;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    .hero p.lead {
+      margin: 0 0 28px;
+      max-width: 760px;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+    }
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      transition: transform 0.12s ease, border-color 0.12s ease;
+    }
+    .btn:hover {
+      text-decoration: none;
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .btn.primary {
+      background: linear-gradient(135deg, #0284c7, #4f46e5);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    /* Sections */
+    section {
+      padding: 48px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    section:last-of-type { border-bottom: none; }
+    h2 {
+      margin: 0 0 8px;
+      font-size: 1.65rem;
+      letter-spacing: -0.01em;
+    }
+    .section-sub {
+      margin: 0 0 26px;
+      color: var(--text-muted);
+    }
+
+    /* Grid cards */
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+    }
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 1.02rem;
+      color: var(--accent);
+    }
+    .card p {
+      margin: 0;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+    code {
+      font-family: var(--mono);
+      font-size: 0.86em;
+      background: rgba(148, 163, 184, 0.12);
+      padding: 2px 6px;
+      border-radius: 5px;
+      color: #e2e8f0;
+    }
+
+    /* Callouts */
+    .callout {
+      border-radius: 12px;
+      padding: 16px 18px;
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+      font-size: 0.94rem;
+    }
+    .callout.danger {
+      background: var(--danger-bg);
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+    .callout.info {
+      background: var(--info-bg);
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+    .callout strong { display: block; margin-bottom: 4px; }
+
+    /* Filter & Table */
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .filter-btn {
+      cursor: pointer;
+      background: var(--bg-card);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 6px 13px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      color: var(--text);
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.12);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--bg-card);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.91rem;
+      min-width: 720px;
+    }
+    th, td {
+      text-align: left;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    th {
+      background: var(--bg-elev);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr.hidden { display: none; }
+
+    .pill {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .pill.ok { background: var(--ok-bg); color: var(--ok); }
+    .pill.warn { background: var(--warn-bg); color: var(--warn); }
+    .pill.info { background: var(--info-bg); color: var(--info); }
+
+    /* Steps */
+    .steps {
+      display: grid;
+      gap: 16px;
+    }
+    .step {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .step-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.16);
+      color: var(--accent);
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .step h3 { margin: 0; font-size: 1.05rem; }
+    pre {
+      margin: 10px 0 0;
+      background: #090d14;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 0.86rem;
+      color: #dbeafe;
+      position: relative;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 0 42px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+    .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <span>Open-Atorch-T3</span>
+      </div>
+      <nav class="navlinks">
+        <a href="#hardware">Hardware</a>
+        <a href="#matrix">Feature- &amp; Test-Matrix</a>
+        <a href="#install">Installation</a>
+        <a href="#recovery">Recovery</a>
+        <a href="https://github.com/ThomasSebastianLE/Open-Atorch-T3" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="badges">
+        <span class="badge accent">GNU GPLv3</span>
+        <span class="badge">JieLi AC707N (BR35 / pi32v2)</span>
+        <span class="badge">LVGL v8</span>
+        <span class="badge">Unbrickable USB-HID Recovery</span>
+      </div>
+      <h1>Open-Atorch-T3</h1>
+      <p class="lead">
+        Offene Custom-Firmware, Hardware-Abstraktion (BSP), WebBLE-Dashboard und Flash-/Recovery-Werkzeuge
+        für das <strong>ATORCH / JUWEI T3</strong> USB-C-Power-Meter. Entwickelt auf Basis einer vollständigen
+        Reverse-Engineering-Analyse der Serienfirmware.
+      </p>
+      <div class="cta-row">
+        <a class="btn primary" href="#install">Firmware installieren</a>
+        <a class="btn" href="#matrix">Feature- &amp; Test-Matrix</a>
+        <a class="btn" href="https://github.com/ThomasSebastianLE/Open-Atorch-T3" target="_blank" rel="noopener">Quellcode auf GitHub</a>
+      </div>
+    </section>
+
+    <section id="hardware">
+      <h2>Hardware-Überblick</h2>
+      <p class="section-sub">Nachgewiesene Plattform &amp; Sensorik des ATORCH / JUWEI T3 (vollständig dokumentiert in <code>AGENTS.md</code>).</p>
+      <div class="grid-4">
+        <div class="card">
+          <h3>SoC &amp; Speicher</h3>
+          <p><strong>Zhuhai JieLi AC707N</strong> (<code>BR35</code>, <code>pi32v2</code> bis 288 MHz, 2D-GPU) mit 2 MB SPI NOR Flash (DTR-Modus).</p>
+        </div>
+        <div class="card">
+          <h3>Display &amp; Touch</h3>
+          <p>1,54" IPS 240×240 (<code>ST7789V</code> über Hardware-<code>JL_DBI</code>, PWM-Backlight <code>IO_LCD_PG</code>) + <code>CST816D</code> Touch auf <code>I2C0</code>.</p>
+        </div>
+        <div class="card">
+          <h3>Präzisions-Messtechnik</h3>
+          <p><code>INA226</code> (1,2–50 V, bidirektionaler 5 mΩ Shunt), <code>PA10</code> GPADC für AC-Ripple + 256-Punkt-FFT, <code>PC02/PC03</code> für <code>D-/D+</code>, <code>PB00</code> NTC.</p>
+        </div>
+        <div class="card">
+          <h3>Sensoren &amp; Funk</h3>
+          <p><code>SC7A20</code> (3-Achsen-G-Sensor), <code>ENS220</code> oder <code>BMP280</code> (Barometer), Vibrationsmotor (<code>IO_MT_PG</code>), BLE 5.4 + WebBLE.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="matrix">
+      <h2>Feature- &amp; Test-Matrix</h2>
+      <p class="section-sub">
+        Transparente Übersicht, was implementiert ist, was funktionieren sollte und welche Komponenten bereits real am Gerät getestet wurden.
+      </p>
+
+      <div class="filters" role="group" aria-label="Kategorie-Filter">
+        <button class="filter-btn active" data-filter="all">Alle</button>
+        <button class="filter-btn" data-filter="tested">Verifiziert (Thomas)</button>
+        <button class="filter-btn" data-filter="open">Nachtest / Tester gesucht</button>
+        <button class="filter-btn" data-filter="bsp">Hardware &amp; BSP</button>
+        <button class="filter-btn" data-filter="meter">Meter-UI &amp; Analyse</button>
+        <button class="filter-btn" data-filter="tools">Flash, BLE &amp; Recovery</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Feature / Komponente</th>
+              <th>Soll-Funktion</th>
+              <th>Status</th>
+              <th>Getestet von</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-body">
+            <tr data-cat="bsp" data-tested="yes">
+              <td><strong>ST7789V 240×240 IPS &amp; Backlight</strong><br><code>JL_DBI</code>, <code>PC00</code>, <code>PA07</code>, <code>IO_LCD_PG</code></td>
+              <td>RGB565-Ausgabe über LVGL v8 mit dimmbarem 10-kHz-PWM-Backlight.</td>
+              <td><span class="pill ok">Funktioniert</span></td>
+              <td>ThomasSebastianLE</td>
+            </tr>
+            <tr data-cat="bsp" data-tested="yes">
+              <td><strong>CST816D Touchscreen</strong><br><code>I2C0</code> (<code>PA05/PA06</code>), <code>INT=PB08</code></td>
+              <td>Kapazitive Touch-Koordinaten, Tap &amp; Swipe-Gesten.</td>
+              <td><span class="pill ok">Funktioniert</span></td>
+              <td>ThomasSebastianLE</td>
+            </tr>
+            <tr data-cat="bsp" data-tested="yes">
+              <td><strong>INA226 Strom-/Spannungssensor</strong><br><code>I2C1</code> (<code>0x40</code>)</td>
+              <td><code>VBUS</code> (1,2–50 V), bidirektionaler <code>IBUS</code> (5 mΩ Shunt), Leistung <code>W</code>.</td>
+              <td><span class="pill ok">Funktioniert</span></td>
+              <td>ThomasSebastianLE</td>
+            </tr>
+            <tr data-cat="bsp" data-tested="yes">
+              <td><strong>SC7A20 G-Sensor</strong><br><code>I2C1</code> (<code>0x19</code>)</td>
+              <td>3-Achsen-Beschleunigung für Auto-Rotation &amp; Wasserwaage.</td>
+              <td><span class="pill ok">Funktioniert</span></td>
+              <td>ThomasSebastianLE</td>
+            </tr>
+            <tr data-cat="bsp" data-tested="yes">
+              <td><strong>ENS220 Barometer</strong><br><code>I2C1</code> (<code>0x20</code>)</td>
+              <td>Luftdruck &amp; relative Höhenberechnung (Bestückungsvariante B).</td>
+              <td><span class="pill ok">Funktioniert</span></td>
+              <td>ThomasSebastianLE</td>
+            </tr>
+            <tr data-cat="bsp" data-tested="no">
+              <td><strong>BMP280 Barometer</strong><br><code>I2C1</code> (<code>0x77</code>)</td>
+              <td>Alternative Bestückungsvariante A (auf dem Testgerät war <code>ENS220</code> verbaut).</td>
+              <td><span class="pill info">Soll funktionieren</span></td>
+              <td>Noch ungetestet (Tester mit BMP280 gesucht)</td>
+            </tr>
+            <tr data-cat="bsp" data-tested="no">
+              <td><strong>Vibrationsmotor (Haptik)</strong><br><code>IO_MT_PG</code> (10 kHz MCPWM)</td>
+              <td>Haptik-Impulse bei Touch, Alarmen und Tasterdruck (Puls auf 200 ms / 100 % erhöht).</td>
+              <td><span class="pill warn">Nachtest offen</span></td>
+              <td>ThomasSebastianLE (80 ms/65 % war zu schwach; 200 ms gebaut, Nachtest offen)</td>
+            </tr>
+            <tr data-cat="bsp" data-tested="no">
+              <td><strong>NTC-Temperatur &amp; USB D+/D-</strong><br><code>PB00</code>, <code>PC02/PC03</code> GPADC</td>
+              <td>Platinentemperatur (-35..+131 °C) sowie <code>D+</code>/<code>D-</code>-Spannungen für Protokollerkennung.</td>
+              <td><span class="pill info">Soll funktionieren</span></td>
+              <td>Noch ungetestet in <code>t3-meter-fw</code></td>
+            </tr>
+            <tr data-cat="bsp" data-tested="no">
+              <td><strong>Physischer Taster</strong><br><code>PB07</code></td>
+              <td>Kurz-/Langdruck-Navigation ergänzend zum Touchscreen.</td>
+              <td><span class="pill info">Soll funktionieren</span></td>
+              <td>Noch ungetestet</td>
+            </tr>
+            <tr data-cat="meter" data-tested="no">
+              <td><strong>MTR-Tab (Live-Meter)</strong><br><code>IN/OUT mAh</code>, <code>3.7V</code>-Zell-Kapazität, <code>BANK A/B/C</code>, Big-Numbers</td>
+              <td>Hauptansicht mit getrennten Lade-/Entladezählern, Peaks und 3 Speicherbänken.</td>
+              <td><span class="pill info">Implementiert</span></td>
+              <td>Praxistest offen</td>
+            </tr>
+            <tr data-cat="meter" data-tested="no">
+              <td><strong>CRV-Tab (Echtzeit-Kurve)</strong><br><code>lv_chart</code>, Brownout-Zähler</td>
+              <td>Live-Verlauf von Spannung &amp; Strom, <code>Vmin/Vmax</code>, <code>Ipeak</code>, Brownout-Erkennung (&lt; 4,50 V).</td>
+              <td><span class="pill info">Implementiert</span></td>
+              <td>Praxistest offen</td>
+            </tr>
+            <tr data-cat="meter" data-tested="no">
+              <td><strong>RPL-Tab (AC-Ripple-Oszilloskop)</strong><br><code>PA10</code> GPADC + 256-Punkt-FFT</td>
+              <td>Restwelligkeit (<code>Vpp</code>), dominante Schaltfrequenz und Netzteil-Qualitätsbewertung.</td>
+              <td><span class="pill info">Implementiert</span></td>
+              <td>Praxistest offen</td>
+            </tr>
+            <tr data-cat="meter" data-tested="no">
+              <td><strong>CBL-Tab (Kabel- &amp; Droop-Test)</strong><br>2-Schritt-Messung</td>
+              <td>Berechnung von <code>R_cable</code> (mΩ) und Spannungseinbruch (<code>mV</code> / <code>%</code>) unter Last.</td>
+              <td><span class="pill info">Implementiert</span></td>
+              <td>Praxistest offen</td>
+            </tr>
+            <tr data-cat="meter" data-tested="no">
+              <td><strong>SNS-Tab (Schnelllade-Monitor, Baro, Wasserwaage)</strong></td>
+              <td>Passive Protokoll-Erkennung (USB, DCP, Apple, AFC/FCP, QC, PD) + <code>SC7A20</code>/Barometer.</td>
+              <td><span class="pill info">Implementiert</span></td>
+              <td>Praxistest offen</td>
+            </tr>
+            <tr data-cat="meter" data-tested="no">
+              <td><strong>SET-Tab &amp; VM-Persistenz</strong><br><code>syscfg_write</code></td>
+              <td>Helligkeit, Haptik, Auto-Rotation, BLE Beacon, Alarme, Gain-Kalibrierung, <code>ZERO I</code>, <code>SAVE VM</code>, <code>UBOOT</code>.</td>
+              <td><span class="pill info">Implementiert</span></td>
+              <td>Praxistest offen</td>
+            </tr>
+            <tr data-cat="meter" data-tested="no">
+              <td><strong>Alarme &amp; 10-Min-Blackbox</strong></td>
+              <td>Warnbanner + Haptik bei Ladeende, &gt;21 V, &gt;5 A, &gt;60 °C; 60-Einträge-Ringpuffer im RAM.</td>
+              <td><span class="pill info">Implementiert</span></td>
+              <td>Praxistest offen</td>
+            </tr>
+            <tr data-cat="tools" data-tested="no">
+              <td><strong>BLE Beacon, GATT &amp; WebBLE-App</strong><br><code>T3_MTR</code>, <code>0xFFE0/1/2</code>, <code>webble/index.html</code></td>
+              <td>Live-Telemetrie per BLE-Advertising &amp; GATT im Browser-Dashboard.</td>
+              <td><span class="pill info">Implementiert</span></td>
+              <td>Praxistest offen</td>
+            </tr>
+            <tr data-cat="tools" data-tested="yes">
+              <td><strong>2-MB-Full-Flash-Backup</strong><br><code>scripts/backup-device.ps1</code></td>
+              <td>Vollständiger Dump inkl. <code>VM</code>-Kalibrierung, <code>BTIF</code> und <code>key_mac</code> vor dem ersten Flash.</td>
+              <td><span class="pill ok">Funktioniert</span></td>
+              <td>ThomasSebastianLE (2× bit-identisch verifiziert)</td>
+            </tr>
+            <tr data-cat="tools" data-tested="yes">
+              <td><strong>Slot-Packaging &amp; USB-Flash</strong><br><code>pack_t3_slot.py</code> + <code>flash-slot.ps1</code></td>
+              <td>Bettet OEM-Ressourcen-<code>SDFILE</code> (54.048 B) ein, scrambled <code>0x5000</code>-Slot und flasht mit Readback-Check.</td>
+              <td><span class="pill ok">Funktioniert</span></td>
+              <td>ThomasSebastianLE</td>
+            </tr>
+            <tr data-cat="tools" data-tested="yes">
+              <td><strong>Hardware-Recovery (USB-HID-IAP)</strong><br><code>scripts/atorch_iap_flash.py</code></td>
+              <td>Stellt Original- oder Custom-Firmware unabhängig vom <code>0x5000</code>-Slot per Tastenkombination wieder her.</td>
+              <td><span class="pill ok">Funktioniert</span></td>
+              <td>ThomasSebastianLE</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout info" style="margin-top: 18px;">
+        <strong>Community-Mithilfe willkommen!</strong>
+        Du hast ein Feature auf deinem T3 getestet (oder besitzt ein Board mit <code>BMP280</code> statt <code>ENS220</code>)?
+        Erstelle gerne ein <a href="https://github.com/ThomasSebastianLE/Open-Atorch-T3/issues" target="_blank" rel="noopener">GitHub Issue</a> oder einen Pull Request, dann tragen wir dein Testergebnis in diese Matrix ein.
+      </div>
+    </section>
+
+    <section id="install">
+      <h2>Firmware bauen &amp; installieren</h2>
+      <p class="section-sub">Reproduzierbare Build- &amp; Flash-Pipeline für Windows (PowerShell) mit Docker-Toolchain.</p>
+
+      <div class="callout danger">
+        <strong>Pflicht vor dem ersten Flashen: Vollständiges 2-MB-Backup anlegen!</strong>
+        Im Flash-Bereich ab <code>0x138000</code> liegen Werkskalibrierung (<code>VM</code>), Bluetooth-Daten (<code>BTIF</code>) und MAC-Adresse (<code>key_mac</code>).
+        Ziehe zuerst ein komplettes Backup. Außerdem wird die originale Datei <code>T3 Firmware Version-UP 2.0.4.bin</code> lokal im Projekt-Root benötigt,
+        da <code>pack_t3_slot.py</code> daraus das 54.048 Byte große OEM-Ressourcen-<code>SDFILE</code> extrahiert (aus Lizenzgründen nicht im GitHub-Repo enthalten).
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-head"><span class="step-num">1</span><h3>Voraussetzungen installieren</h3></div>
+          <p>Benötigt werden <strong>Docker Desktop</strong> (Linux-Container <code>linux/amd64</code>), <strong>Git</strong>, <strong>Python 3.10+</strong> (mit <code>.venv</code>) sowie für <code>jl-uboot-tool</code> ggf. <code>libusbk</code>/<code>WinUSB</code>-Treiber.</p>
+        </div>
+
+        <div class="step">
+          <div class="step-head"><span class="step-num">2</span><h3>Repository klonen &amp; JieLi AC707N SDK laden</h3></div>
+          <p>Das proprietäre JieLi-SDK wird nicht auf GitHub gehostet, sondern einmalig lokal heruntergeladen und entpackt:</p>
+          <pre>git clone --recursive https://github.com/ThomasSebastianLE/Open-Atorch-T3.git
+cd Open-Atorch-T3
+.\scripts\setup-sdk.ps1</pre>
+        </div>
+
+        <div class="step">
+          <div class="step-head"><span class="step-num">3</span><h3>Geräte-Backup ziehen (als Administrator)</h3></div>
+          <p>Prüft den USB-ROM-Bootloader-Hook und speichert ein vollständiges 2-MB-Backup unter <code>backups/</code>:</p>
+          <pre>.\.venv\Scripts\python.exe .\scripts\enter_uboot.py --probe
+.\scripts\backup-device.ps1</pre>
+        </div>
+
+        <div class="step">
+          <div class="step-head"><span class="step-num">4</span><h3>Firmware kompilieren &amp; <code>0x5000</code>-Slot verpacken</h3></div>
+          <p>Wendet das BSP-Overlay an, kompiliert im Ubuntu-Container mit <code>pi32v2</code> Clang und erzeugt den fertig gescrambelten Slot:</p>
+          <pre>.\scripts\build.ps1 -Project meter</pre>
+        </div>
+
+        <div class="step">
+          <div class="step-head"><span class="step-num">5</span><h3>Firmware auf das ATORCH T3 flashen</h3></div>
+          <p>Versetzt das Gerät in den Bootloader (<code>BR35UBOOT1.00</code>), flasht <code>t3-meter-fw-slot.bin</code> und führt eine Rücklese-Prüfung durch:</p>
+          <pre>.\scripts\flash-slot.ps1 -SlotPath .\firmware-builds\t3-meter-fw-slot.bin</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="recovery">
+      <h2>Notfall-Recovery (Unbrickable)</h2>
+      <p class="section-sub">Falls eine eigene Firmware einmal nicht bootet, bleibt der werkseitige USB-HID-IAP-Bootloader immer erreichbar.</p>
+      <div class="step">
+        <div class="step-head"><span class="step-num">!</span><h3>Wiederherstellung per USB-HID-IAP (<code>ATORCH T3 V1.0.1</code>)</h3></div>
+        <p>
+          Halte <strong>beide physischen Taster</strong> am T3 gleichzeitig gedrückt, während du das USB-Kabel einsteckst
+          (Display zeigt <code>product updating</code> / <code>chann usb hid</code>). Danach kannst du die Original-Firmware wieder aufspielen:
+        </p>
+        <pre>.\.venv\Scripts\python.exe .\scripts\atorch_iap_flash.py "T3 Firmware Version-UP 2.0.4.bin"</pre>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div>Open-Atorch-T3 · Lizenziert unter <strong>GNU GPLv3</strong> (inkl. JieLi-SDK Linking-Exception)</div>
+      <div><a href="https://github.com/ThomasSebastianLE/Open-Atorch-T3" target="_blank" rel="noopener">github.com/ThomasSebastianLE/Open-Atorch-T3</a></div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const buttons = document.querySelectorAll('.filter-btn');
+      const rows = document.querySelectorAll('#matrix-body tr');
+      buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          buttons.forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          const f = btn.dataset.filter;
+          rows.forEach((row) => {
+            const show =
+              f === 'all' ||
+              (f === 'tested' && row.dataset.tested === 'yes') ||
+              (f === 'open' && row.dataset.tested === 'no') ||
+              row.dataset.cat === f;
+            row.classList.toggle('hidden', !show);
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

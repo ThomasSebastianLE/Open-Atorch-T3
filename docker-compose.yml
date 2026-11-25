@@ -1,0 +1,16 @@
+services:
+  builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: t3-ac707n-builder:latest
+    platform: linux/amd64
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    stdin_open: true
+    tty: true

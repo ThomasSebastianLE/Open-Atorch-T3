@@ -1,0 +1,21 @@
+build/
+firmware-builds/
+.cache/
+*.o
+*.d
+*.tmp
+*.log
+__pycache__/
+.venv/
+sdk/ac707n/
+sdk/ac707n/SDK/objs/
+sdk/ac707n/SDK/output/
+sdk/ac707n/SDK/tools/linux/
+backups/*.bin
+backups/*.sha256
+backups/*.fw
+backups/*.ufw
+T3 Firmware Version-UP 2.0.4.bin
+projects/t3-doom/
+projects/t3-hennergotchi/
+gfx/
