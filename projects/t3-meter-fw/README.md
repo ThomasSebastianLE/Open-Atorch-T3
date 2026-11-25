@@ -1,23 +1,23 @@
-# Teilprojekt 1: `t3-meter-fw` — Verbesserte ATORCH-T3-Firmware
+# `t3-meter-fw` — Enhanced ATORCH T3 Power Meter Firmware
 
-Ziel dieses Teilprojekts ist eine offene, aufgeräumte, schnelle und erweiterte Power-Meter-Firmware für das ATORCH / JUWEI T3 auf Basis von `sdk/ac707n` und [`shared/t3-bsp`](../../shared/t3-bsp/README.md).
+An open, clean, fast, and feature-rich power meter firmware for the ATORCH / JUWEI T3 built on `sdk/ac707n` and [`shared/t3-bsp`](../../shared/t3-bsp/README.md).
 
-## Implementierte Features (v1.1)
+## Implemented Features (v1.1)
 
-* **6-Tab LVGL-v8-UI (`MTR`, `CRV`, `RPL`, `CBL`, `SNS`, `SET`) + `PB07`-Taster:**
-  * **MTR (Live-Meter):** `VBUS`, bidirektionaler `IBUS`, Leistung `W`, getrennte `IN / OUT`-Zähler (`+mAh / -mAh`), `3.7 V`-Powerbank-Zellkapazität, `Wh`, Peak-Werte (`Pmax`, `Ipeak`), Laufzeit, **3 persistente Speicherbänke (`BANK A/B/C`)** sowie **Big-Numbers-Modus** per Fingertipp auf die Messwert-Fläche.
-  * **CRV (Echtzeit-Kurve):** `lv_chart` für `V` & `I`, `Vmin/Vmax`, `Ipeak` und **Brownout-Zähler** (`VBUS < 4,50 V` unter Last).
-  * **RPL (AC-Ripple-Oszilloskop):** `PA10` GPADC-Capture, `Vpp`, gleitender Durchschnitt, dominante Schaltfrequenz (`Hz`/`kHz`) und direkte **Netzteil-Qualitätsbewertung** (`SEHR SAUBER < 30 mVpp` / `OK` / `STARKES RAUSCHEN >= 80 mVpp`).
-  * **CBL (Kabel- & Droop-Test):** 2-Schritt-Messung von `V0` (Leerlauf) → `R_cable` (`mΩ`), **Spannungseinbruch (`Droop` in `mV` & `%`)** und Qualitätsbewertung.
-  * **SNS (Schnelllade-Monitor, Baro & Wasserwaage):** Passive Schnelllade-Erkennung über `D+`/`D-` + `VBUS` (`USB 5V`, `DCP 1.5A`, `Apple 1/2A / 2.4A`, `Samsung AFC/FCP`, `QC 2.0/3.0`, `PD/QC 9V/12V/15V/20V`), `BMP280`/`ENS220` Luftdruck & Höhe (`HOEHE = 0m`), `SC7A20` Wasserwaage + Auto-Rotation.
-  * **SET (Config-Menü & Kalibrierung):** Helligkeit (`10..100 %`), Haptik (`EIN/AUS`), Auto-Rotation (`EIN/AUS`), **`BLE Beacon: EIN/AUS`**, **Alarme (`EIN/AUS`)**, `V`/`I`-Gain-Kalibrierung, `ZERO I`, `SAVE VM` (dauerhafte Speicherung in `VM` via `syscfg_write`) und `UBOOT`-Trigger (1 s gedrückt halten).
-* **Alarme mit Haptik & Warnbanner:**
-  * Ladeende (`< 50 mA` nach vorheriger Last), Überspannung (`> 21 V`), Überstrom (`> 5 A`) und Überhitzung (`> 60 °C`).
-* **Offline-Blackbox-Ringpuffer:**
-  * Speichert alle 10 s `(V, I, W, °C)` im RAM (60 Einträge = 10 min).
-* **Bluetooth / BLE Beacon & WebBLE-App:**
-  * Über `SET` deaktivierbarer **BLE Beacon** (Company ID `0x5433`, 16-Byte-Telemetrie-Payload, Gerätename `T3_MTR`) sowie ATorch-kompatibles GATT (`0xFFE0`/`0xFFE1`/`0xFFE2`).
-  * Siehe [`docs/BLE_APP_PROTOCOL.md`](docs/BLE_APP_PROTOCOL.md) für die vollständige App-Protokoll-Dokumentation und [`webble/index.html`](webble/index.html) für das Browser-Dashboard.
+* **6-Tab LVGL v8 UI (`MTR`, `CRV`, `RPL`, `CBL`, `SNS`, `SET`) + `PB07` button:**
+  * **MTR (Live Meter):** `VBUS`, bidirectional `IBUS`, power `W`, separate `IN / OUT` counters (`+mAh / -mAh`), `3.7 V` powerbank cell capacity, `Wh`, peak values (`Pmax`, `Ipeak`), runtime, **3 persistent memory banks (`BANK A/B/C`)**, and **Big-Numbers mode** by tapping the measurement area.
+  * **CRV (Real-Time Curve):** `lv_chart` for `V` & `I`, `Vmin/Vmax`, `Ipeak`, and **brownout counter** (`VBUS < 4.50 V` under load).
+  * **RPL (AC Ripple Oscilloscope):** `PA10` GPADC capture, `Vpp`, moving average, dominant switching frequency (`Hz`/`kHz`), and **PSU quality rating** (`VERY CLEAN < 30 mVpp` / `OK` / `HIGH NOISE >= 80 mVpp`).
+  * **CBL (Cable & Droop Test):** 2-step measurement of `V0` (no load) → `R_cable` (`mΩ`), **voltage droop (`mV` & `%`)**, and quality rating.
+  * **SNS (Fast-Charge Monitor, Barometer & Level):** Passive fast-charge detection via `D+`/`D-` + `VBUS` (`USB 5V`, `DCP 1.5A`, `Apple 1/2A / 2.4A`, `Samsung AFC/FCP`, `QC 2.0/3.0`, `PD/QC 9V/12V/15V/20V`), `BMP280`/`ENS220` pressure & altitude (`ALT = 0m`), `SC7A20` spirit level + auto-rotation.
+  * **SET (Config Menu & Calibration):** Brightness (`10..100 %`), haptics (`ON/OFF`), auto-rotation (`ON/OFF`), **`BLE Beacon: ON/OFF`**, **alerts (`ON/OFF`)**, `V`/`I` gain calibration, `ZERO I`, `SAVE VM` (persistent storage in `VM` via `syscfg_write`), and `UBOOT` trigger (hold 1 s).
+* **Alerts with Haptics & Warning Banner:**
+  * Charge end (`< 50 mA` after prior load), overvoltage (`> 21 V`), overcurrent (`> 5 A`), and overtemperature (`> 60 °C`).
+* **Offline Blackbox Ring Buffer:**
+  * Stores `(V, I, W, °C)` every 10 s in RAM (60 entries = 10 min).
+* **Bluetooth / BLE Beacon & WebBLE App:**
+  * Toggleable **BLE Beacon** in `SET` (Company ID `0x5433`, 16-byte telemetry payload, device name `T3_MTR`) plus ATorch-compatible GATT (`0xFFE0`/`0xFFE1`/`0xFFE2`).
+  * See [`docs/BLE_APP_PROTOCOL.md`](docs/BLE_APP_PROTOCOL.md) for the full app protocol spec and [`webble/index.html`](webble/index.html) for the browser dashboard.
 
 ## Build & Flash
 

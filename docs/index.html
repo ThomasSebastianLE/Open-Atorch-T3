@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Open-Atorch-T3 — Open-Source-Firmware für das ATORCH / JUWEI T3</title>
-  <meta name="description" content="Offene GPLv3 Custom-Firmware, Board-Support-Package, WebBLE-Dashboard und Recovery-Tools für das ATORCH / JUWEI T3 USB-C-Power-Meter (JieLi AC707N / BR35)." />
+  <title>Open-Atorch-T3 — Open-Source Firmware for the ATORCH / JUWEI T3</title>
+  <meta name="description" content="Open GPLv3 custom firmware, board support package, WebBLE dashboard, and recovery tools for the ATORCH / JUWEI T3 USB-C power meter (JieLi AC707N / BR35)." />
   <style>
     :root {
       --bg: #0b0f17;
@@ -351,7 +351,7 @@
       </div>
       <nav class="navlinks">
         <a href="#hardware">Hardware</a>
-        <a href="#matrix">Feature- &amp; Test-Matrix</a>
+        <a href="#matrix">Feature &amp; Test Matrix</a>
         <a href="#install">Installation</a>
         <a href="#recovery">Recovery</a>
         <a href="https://github.com/ThomasSebastianLE/Open-Atorch-T3" target="_blank" rel="noopener">GitHub</a>
@@ -369,52 +369,52 @@
       </div>
       <h1>Open-Atorch-T3</h1>
       <p class="lead">
-        Offene Custom-Firmware, Hardware-Abstraktion (BSP), WebBLE-Dashboard und Flash-/Recovery-Werkzeuge
-        für das <strong>ATORCH / JUWEI T3</strong> USB-C-Power-Meter. Entwickelt auf Basis einer vollständigen
-        Reverse-Engineering-Analyse der Serienfirmware.
+        Open-source custom firmware, board support package (BSP), WebBLE dashboard, and flash/recovery tools
+        for the <strong>ATORCH / JUWEI T3</strong> USB-C power meter. Built on a complete reverse-engineering
+        analysis of the stock firmware.
       </p>
       <div class="cta-row">
-        <a class="btn primary" href="#install">Firmware installieren</a>
-        <a class="btn" href="#matrix">Feature- &amp; Test-Matrix</a>
-        <a class="btn" href="https://github.com/ThomasSebastianLE/Open-Atorch-T3" target="_blank" rel="noopener">Quellcode auf GitHub</a>
+        <a class="btn primary" href="#install">Install Firmware</a>
+        <a class="btn" href="#matrix">Feature &amp; Test Matrix</a>
+        <a class="btn" href="https://github.com/ThomasSebastianLE/Open-Atorch-T3" target="_blank" rel="noopener">Source on GitHub</a>
       </div>
     </section>
 
     <section id="hardware">
-      <h2>Hardware-Überblick</h2>
-      <p class="section-sub">Nachgewiesene Plattform &amp; Sensorik des ATORCH / JUWEI T3 (vollständig dokumentiert in <code>AGENTS.md</code>).</p>
+      <h2>Hardware Overview</h2>
+      <p class="section-sub">Verified hardware platform &amp; sensors of the ATORCH / JUWEI T3 (documented in detail in <code>AGENTS.md</code>).</p>
       <div class="grid-4">
         <div class="card">
-          <h3>SoC &amp; Speicher</h3>
-          <p><strong>Zhuhai JieLi AC707N</strong> (<code>BR35</code>, <code>pi32v2</code> bis 288 MHz, 2D-GPU) mit 2 MB SPI NOR Flash (DTR-Modus).</p>
+          <h3>SoC &amp; Storage</h3>
+          <p><strong>Zhuhai JieLi AC707N</strong> (<code>BR35</code>, <code>pi32v2</code> up to 288 MHz, 2D GPU) with 2 MB SPI NOR flash (DTR mode).</p>
         </div>
         <div class="card">
           <h3>Display &amp; Touch</h3>
-          <p>1,54" IPS 240×240 (<code>ST7789V</code> über Hardware-<code>JL_DBI</code>, PWM-Backlight <code>IO_LCD_PG</code>) + <code>CST816D</code> Touch auf <code>I2C0</code>.</p>
+          <p>1.54" IPS 240×240 (<code>ST7789V</code> over hardware <code>JL_DBI</code>, PWM backlight <code>IO_LCD_PG</code>) + <code>CST816D</code> touch on <code>I2C0</code>.</p>
         </div>
         <div class="card">
-          <h3>Präzisions-Messtechnik</h3>
-          <p><code>INA226</code> (1,2–50 V, bidirektionaler 5 mΩ Shunt), <code>PA10</code> GPADC für AC-Ripple + 256-Punkt-FFT, <code>PC02/PC03</code> für <code>D-/D+</code>, <code>PB00</code> NTC.</p>
+          <h3>Precision Metering</h3>
+          <p><code>INA226</code> (1.2–50 V, bidirectional 5 mΩ shunt), <code>PA10</code> GPADC for AC ripple + 256-pt FFT, <code>PC02/PC03</code> for <code>D-/D+</code>, <code>PB00</code> NTC.</p>
         </div>
         <div class="card">
-          <h3>Sensoren &amp; Funk</h3>
-          <p><code>SC7A20</code> (3-Achsen-G-Sensor), <code>ENS220</code> oder <code>BMP280</code> (Barometer), Vibrationsmotor (<code>IO_MT_PG</code>), BLE 5.4 + WebBLE.</p>
+          <h3>Sensors &amp; Wireless</h3>
+          <p><code>SC7A20</code> (3-axis accelerometer), <code>ENS220</code> or <code>BMP280</code> (barometer), vibration motor (<code>IO_MT_PG</code>), BLE 5.4 + WebBLE.</p>
         </div>
       </div>
     </section>
 
     <section id="matrix">
-      <h2>Feature- &amp; Test-Matrix</h2>
+      <h2>Feature &amp; Test Matrix</h2>
       <p class="section-sub">
-        Transparente Übersicht, was implementiert ist, was funktionieren sollte und welche Komponenten bereits real am Gerät getestet wurden.
+        Transparent overview of what is implemented, what is expected to work, and which components have already been verified on real hardware.
       </p>
 
-      <div class="filters" role="group" aria-label="Kategorie-Filter">
-        <button class="filter-btn active" data-filter="all">Alle</button>
-        <button class="filter-btn" data-filter="tested">Verifiziert (Thomas)</button>
-        <button class="filter-btn" data-filter="open">Nachtest / Tester gesucht</button>
+      <div class="filters" role="group" aria-label="Category filter">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="tested">Verified (Thomas)</button>
+        <button class="filter-btn" data-filter="open">Retest / Testers Wanted</button>
         <button class="filter-btn" data-filter="bsp">Hardware &amp; BSP</button>
-        <button class="filter-btn" data-filter="meter">Meter-UI &amp; Analyse</button>
+        <button class="filter-btn" data-filter="meter">Meter UI &amp; Analysis</button>
         <button class="filter-btn" data-filter="tools">Flash, BLE &amp; Recovery</button>
       </div>
 
@@ -422,131 +422,131 @@
         <table>
           <thead>
             <tr>
-              <th>Feature / Komponente</th>
-              <th>Soll-Funktion</th>
+              <th>Feature / Component</th>
+              <th>Expected Behavior</th>
               <th>Status</th>
-              <th>Getestet von</th>
+              <th>Tested By</th>
             </tr>
           </thead>
           <tbody id="matrix-body">
             <tr data-cat="bsp" data-tested="yes">
               <td><strong>ST7789V 240×240 IPS &amp; Backlight</strong><br><code>JL_DBI</code>, <code>PC00</code>, <code>PA07</code>, <code>IO_LCD_PG</code></td>
-              <td>RGB565-Ausgabe über LVGL v8 mit dimmbarem 10-kHz-PWM-Backlight.</td>
-              <td><span class="pill ok">Funktioniert</span></td>
+              <td>RGB565 rendering via LVGL v8 with dimmable 10 kHz PWM backlight.</td>
+              <td><span class="pill ok">Working</span></td>
               <td>ThomasSebastianLE</td>
             </tr>
             <tr data-cat="bsp" data-tested="yes">
               <td><strong>CST816D Touchscreen</strong><br><code>I2C0</code> (<code>PA05/PA06</code>), <code>INT=PB08</code></td>
-              <td>Kapazitive Touch-Koordinaten, Tap &amp; Swipe-Gesten.</td>
-              <td><span class="pill ok">Funktioniert</span></td>
+              <td>Capacitive touch coordinates, tap &amp; swipe gestures.</td>
+              <td><span class="pill ok">Working</span></td>
               <td>ThomasSebastianLE</td>
             </tr>
             <tr data-cat="bsp" data-tested="yes">
-              <td><strong>INA226 Strom-/Spannungssensor</strong><br><code>I2C1</code> (<code>0x40</code>)</td>
-              <td><code>VBUS</code> (1,2–50 V), bidirektionaler <code>IBUS</code> (5 mΩ Shunt), Leistung <code>W</code>.</td>
-              <td><span class="pill ok">Funktioniert</span></td>
+              <td><strong>INA226 Voltage / Current Sensor</strong><br><code>I2C1</code> (<code>0x40</code>)</td>
+              <td><code>VBUS</code> (1.2–50 V), bidirectional <code>IBUS</code> (5 mΩ shunt), power <code>W</code>.</td>
+              <td><span class="pill ok">Working</span></td>
               <td>ThomasSebastianLE</td>
             </tr>
             <tr data-cat="bsp" data-tested="yes">
-              <td><strong>SC7A20 G-Sensor</strong><br><code>I2C1</code> (<code>0x19</code>)</td>
-              <td>3-Achsen-Beschleunigung für Auto-Rotation &amp; Wasserwaage.</td>
-              <td><span class="pill ok">Funktioniert</span></td>
+              <td><strong>SC7A20 Accelerometer</strong><br><code>I2C1</code> (<code>0x19</code>)</td>
+              <td>3-axis acceleration for auto-rotation &amp; spirit level.</td>
+              <td><span class="pill ok">Working</span></td>
               <td>ThomasSebastianLE</td>
             </tr>
             <tr data-cat="bsp" data-tested="yes">
               <td><strong>ENS220 Barometer</strong><br><code>I2C1</code> (<code>0x20</code>)</td>
-              <td>Luftdruck &amp; relative Höhenberechnung (Bestückungsvariante B).</td>
-              <td><span class="pill ok">Funktioniert</span></td>
+              <td>Barometric pressure &amp; relative altitude calculation (board variant B).</td>
+              <td><span class="pill ok">Working</span></td>
               <td>ThomasSebastianLE</td>
             </tr>
             <tr data-cat="bsp" data-tested="no">
               <td><strong>BMP280 Barometer</strong><br><code>I2C1</code> (<code>0x77</code>)</td>
-              <td>Alternative Bestückungsvariante A (auf dem Testgerät war <code>ENS220</code> verbaut).</td>
-              <td><span class="pill info">Soll funktionieren</span></td>
-              <td>Noch ungetestet (Tester mit BMP280 gesucht)</td>
+              <td>Alternative board population variant A (test unit uses <code>ENS220</code>).</td>
+              <td><span class="pill info">Should work</span></td>
+              <td>Untested (testers with BMP280 board wanted)</td>
             </tr>
             <tr data-cat="bsp" data-tested="no">
-              <td><strong>Vibrationsmotor (Haptik)</strong><br><code>IO_MT_PG</code> (10 kHz MCPWM)</td>
-              <td>Haptik-Impulse bei Touch, Alarmen und Tasterdruck (Puls auf 200 ms / 100 % erhöht).</td>
-              <td><span class="pill warn">Nachtest offen</span></td>
-              <td>ThomasSebastianLE (80 ms/65 % war zu schwach; 200 ms gebaut, Nachtest offen)</td>
+              <td><strong>Vibration Motor (Haptics)</strong><br><code>IO_MT_PG</code> (10 kHz MCPWM)</td>
+              <td>Haptic pulses on touch, alerts, and button press (increased to 200 ms / 100%).</td>
+              <td><span class="pill warn">Retest pending</span></td>
+              <td>ThomasSebastianLE (80 ms/65% was too weak; 200 ms built, retest pending)</td>
             </tr>
             <tr data-cat="bsp" data-tested="no">
-              <td><strong>NTC-Temperatur &amp; USB D+/D-</strong><br><code>PB00</code>, <code>PC02/PC03</code> GPADC</td>
-              <td>Platinentemperatur (-35..+131 °C) sowie <code>D+</code>/<code>D-</code>-Spannungen für Protokollerkennung.</td>
-              <td><span class="pill info">Soll funktionieren</span></td>
-              <td>Noch ungetestet in <code>t3-meter-fw</code></td>
+              <td><strong>NTC Temperature &amp; USB D+/D-</strong><br><code>PB00</code>, <code>PC02/PC03</code> GPADC</td>
+              <td>Board temperature (-35..+131 °C) and <code>D+</code>/<code>D-</code> voltages for fast-charge detection.</td>
+              <td><span class="pill info">Should work</span></td>
+              <td>Not yet tested in <code>t3-meter-fw</code></td>
             </tr>
             <tr data-cat="bsp" data-tested="no">
-              <td><strong>Physischer Taster</strong><br><code>PB07</code></td>
-              <td>Kurz-/Langdruck-Navigation ergänzend zum Touchscreen.</td>
-              <td><span class="pill info">Soll funktionieren</span></td>
-              <td>Noch ungetestet</td>
+              <td><strong>Physical Button</strong><br><code>PB07</code></td>
+              <td>Short/long-press navigation alongside the touchscreen.</td>
+              <td><span class="pill info">Should work</span></td>
+              <td>Untested</td>
             </tr>
             <tr data-cat="meter" data-tested="no">
-              <td><strong>MTR-Tab (Live-Meter)</strong><br><code>IN/OUT mAh</code>, <code>3.7V</code>-Zell-Kapazität, <code>BANK A/B/C</code>, Big-Numbers</td>
-              <td>Hauptansicht mit getrennten Lade-/Entladezählern, Peaks und 3 Speicherbänken.</td>
-              <td><span class="pill info">Implementiert</span></td>
-              <td>Praxistest offen</td>
+              <td><strong>MTR Tab (Live Meter)</strong><br><code>IN/OUT mAh</code>, <code>3.7V</code> cell capacity, <code>BANK A/B/C</code>, Big-Numbers</td>
+              <td>Main view with separate charge/discharge counters, peak values, and 3 persistent banks.</td>
+              <td><span class="pill info">Implemented</span></td>
+              <td>Field test pending</td>
             </tr>
             <tr data-cat="meter" data-tested="no">
-              <td><strong>CRV-Tab (Echtzeit-Kurve)</strong><br><code>lv_chart</code>, Brownout-Zähler</td>
-              <td>Live-Verlauf von Spannung &amp; Strom, <code>Vmin/Vmax</code>, <code>Ipeak</code>, Brownout-Erkennung (&lt; 4,50 V).</td>
-              <td><span class="pill info">Implementiert</span></td>
-              <td>Praxistest offen</td>
+              <td><strong>CRV Tab (Real-Time Curve)</strong><br><code>lv_chart</code>, Brownout Counter</td>
+              <td>Live voltage &amp; current chart, <code>Vmin/Vmax</code>, <code>Ipeak</code>, brownout detection (&lt; 4.50 V).</td>
+              <td><span class="pill info">Implemented</span></td>
+              <td>Field test pending</td>
             </tr>
             <tr data-cat="meter" data-tested="no">
-              <td><strong>RPL-Tab (AC-Ripple-Oszilloskop)</strong><br><code>PA10</code> GPADC + 256-Punkt-FFT</td>
-              <td>Restwelligkeit (<code>Vpp</code>), dominante Schaltfrequenz und Netzteil-Qualitätsbewertung.</td>
-              <td><span class="pill info">Implementiert</span></td>
-              <td>Praxistest offen</td>
+              <td><strong>RPL Tab (AC Ripple Oscilloscope)</strong><br><code>PA10</code> GPADC + 256-pt FFT</td>
+              <td>Ripple amplitude (<code>Vpp</code>), dominant switching frequency, and PSU quality rating.</td>
+              <td><span class="pill info">Implemented</span></td>
+              <td>Field test pending</td>
             </tr>
             <tr data-cat="meter" data-tested="no">
-              <td><strong>CBL-Tab (Kabel- &amp; Droop-Test)</strong><br>2-Schritt-Messung</td>
-              <td>Berechnung von <code>R_cable</code> (mΩ) und Spannungseinbruch (<code>mV</code> / <code>%</code>) unter Last.</td>
-              <td><span class="pill info">Implementiert</span></td>
-              <td>Praxistest offen</td>
+              <td><strong>CBL Tab (Cable &amp; Droop Test)</strong><br>2-step measurement</td>
+              <td>Calculates <code>R_cable</code> (mΩ) and voltage droop (<code>mV</code> / <code>%</code>) under load.</td>
+              <td><span class="pill info">Implemented</span></td>
+              <td>Field test pending</td>
             </tr>
             <tr data-cat="meter" data-tested="no">
-              <td><strong>SNS-Tab (Schnelllade-Monitor, Baro, Wasserwaage)</strong></td>
-              <td>Passive Protokoll-Erkennung (USB, DCP, Apple, AFC/FCP, QC, PD) + <code>SC7A20</code>/Barometer.</td>
-              <td><span class="pill info">Implementiert</span></td>
-              <td>Praxistest offen</td>
+              <td><strong>SNS Tab (Fast-Charge Monitor, Baro, Level)</strong></td>
+              <td>Passive protocol detection (USB, DCP, Apple, AFC/FCP, QC, PD) + <code>SC7A20</code>/barometer.</td>
+              <td><span class="pill info">Implemented</span></td>
+              <td>Field test pending</td>
             </tr>
             <tr data-cat="meter" data-tested="no">
-              <td><strong>SET-Tab &amp; VM-Persistenz</strong><br><code>syscfg_write</code></td>
-              <td>Helligkeit, Haptik, Auto-Rotation, BLE Beacon, Alarme, Gain-Kalibrierung, <code>ZERO I</code>, <code>SAVE VM</code>, <code>UBOOT</code>.</td>
-              <td><span class="pill info">Implementiert</span></td>
-              <td>Praxistest offen</td>
+              <td><strong>SET Tab &amp; VM Persistence</strong><br><code>syscfg_write</code></td>
+              <td>Brightness, haptics, auto-rotation, BLE beacon, alerts, gain calibration, <code>ZERO I</code>, <code>SAVE VM</code>, <code>UBOOT</code>.</td>
+              <td><span class="pill info">Implemented</span></td>
+              <td>Field test pending</td>
             </tr>
             <tr data-cat="meter" data-tested="no">
-              <td><strong>Alarme &amp; 10-Min-Blackbox</strong></td>
-              <td>Warnbanner + Haptik bei Ladeende, &gt;21 V, &gt;5 A, &gt;60 °C; 60-Einträge-Ringpuffer im RAM.</td>
-              <td><span class="pill info">Implementiert</span></td>
-              <td>Praxistest offen</td>
+              <td><strong>Alerts &amp; 10-Min Blackbox</strong></td>
+              <td>Warning banner + haptics on charge-end, &gt;21 V, &gt;5 A, &gt;60 °C; 60-entry RAM ring buffer.</td>
+              <td><span class="pill info">Implemented</span></td>
+              <td>Field test pending</td>
             </tr>
             <tr data-cat="tools" data-tested="no">
-              <td><strong>BLE Beacon, GATT &amp; WebBLE-App</strong><br><code>T3_MTR</code>, <code>0xFFE0/1/2</code>, <code>webble/index.html</code></td>
-              <td>Live-Telemetrie per BLE-Advertising &amp; GATT im Browser-Dashboard.</td>
-              <td><span class="pill info">Implementiert</span></td>
-              <td>Praxistest offen</td>
+              <td><strong>BLE Beacon, GATT &amp; WebBLE App</strong><br><code>T3_MTR</code>, <code>0xFFE0/1/2</code>, <code>webble/index.html</code></td>
+              <td>Live telemetry over BLE advertising &amp; GATT in the browser dashboard.</td>
+              <td><span class="pill info">Implemented</span></td>
+              <td>Field test pending</td>
             </tr>
             <tr data-cat="tools" data-tested="yes">
-              <td><strong>2-MB-Full-Flash-Backup</strong><br><code>scripts/backup-device.ps1</code></td>
-              <td>Vollständiger Dump inkl. <code>VM</code>-Kalibrierung, <code>BTIF</code> und <code>key_mac</code> vor dem ersten Flash.</td>
-              <td><span class="pill ok">Funktioniert</span></td>
-              <td>ThomasSebastianLE (2× bit-identisch verifiziert)</td>
+              <td><strong>2 MB Full-Flash Backup</strong><br><code>scripts/backup-device.ps1</code></td>
+              <td>Complete flash dump including <code>VM</code> calibration, <code>BTIF</code>, and <code>key_mac</code> before first flash.</td>
+              <td><span class="pill ok">Working</span></td>
+              <td>ThomasSebastianLE (2× bit-identical verified)</td>
             </tr>
             <tr data-cat="tools" data-tested="yes">
-              <td><strong>Slot-Packaging &amp; USB-Flash</strong><br><code>pack_t3_slot.py</code> + <code>flash-slot.ps1</code></td>
-              <td>Bettet OEM-Ressourcen-<code>SDFILE</code> (54.048 B) ein, scrambled <code>0x5000</code>-Slot und flasht mit Readback-Check.</td>
-              <td><span class="pill ok">Funktioniert</span></td>
+              <td><strong>Slot Packaging &amp; USB Flash</strong><br><code>pack_t3_slot.py</code> + <code>flash-slot.ps1</code></td>
+              <td>Embeds OEM resource <code>SDFILE</code> (54,048 B), scrambles <code>0x5000</code> slot, and flashes with readback verify.</td>
+              <td><span class="pill ok">Working</span></td>
               <td>ThomasSebastianLE</td>
             </tr>
             <tr data-cat="tools" data-tested="yes">
-              <td><strong>Hardware-Recovery (USB-HID-IAP)</strong><br><code>scripts/atorch_iap_flash.py</code></td>
-              <td>Stellt Original- oder Custom-Firmware unabhängig vom <code>0x5000</code>-Slot per Tastenkombination wieder her.</td>
-              <td><span class="pill ok">Funktioniert</span></td>
+              <td><strong>Hardware Recovery (USB-HID-IAP)</strong><br><code>scripts/atorch_iap_flash.py</code></td>
+              <td>Restores stock or custom firmware independently of the <code>0x5000</code> slot via dual-button boot combo.</td>
+              <td><span class="pill ok">Working</span></td>
               <td>ThomasSebastianLE</td>
             </tr>
           </tbody>
@@ -554,66 +554,66 @@
       </div>
 
       <div class="callout info" style="margin-top: 18px;">
-        <strong>Community-Mithilfe willkommen!</strong>
-        Du hast ein Feature auf deinem T3 getestet (oder besitzt ein Board mit <code>BMP280</code> statt <code>ENS220</code>)?
-        Erstelle gerne ein <a href="https://github.com/ThomasSebastianLE/Open-Atorch-T3/issues" target="_blank" rel="noopener">GitHub Issue</a> oder einen Pull Request, dann tragen wir dein Testergebnis in diese Matrix ein.
+        <strong>Community Testing Welcome!</strong>
+        Did you test a feature on your T3 (or do you own a board with <code>BMP280</code> instead of <code>ENS220</code>)?
+        Please open a <a href="https://github.com/ThomasSebastianLE/Open-Atorch-T3/issues" target="_blank" rel="noopener">GitHub Issue</a> or Pull Request so we can update this matrix.
       </div>
     </section>
 
     <section id="install">
-      <h2>Firmware bauen &amp; installieren</h2>
-      <p class="section-sub">Reproduzierbare Build- &amp; Flash-Pipeline für Windows (PowerShell) mit Docker-Toolchain.</p>
+      <h2>Build &amp; Installation Guide</h2>
+      <p class="section-sub">Reproducible build &amp; flash pipeline for Windows (PowerShell) using the Docker toolchain.</p>
 
       <div class="callout danger">
-        <strong>Pflicht vor dem ersten Flashen: Vollständiges 2-MB-Backup anlegen!</strong>
-        Im Flash-Bereich ab <code>0x138000</code> liegen Werkskalibrierung (<code>VM</code>), Bluetooth-Daten (<code>BTIF</code>) und MAC-Adresse (<code>key_mac</code>).
-        Ziehe zuerst ein komplettes Backup. Außerdem wird die originale Datei <code>T3 Firmware Version-UP 2.0.4.bin</code> lokal im Projekt-Root benötigt,
-        da <code>pack_t3_slot.py</code> daraus das 54.048 Byte große OEM-Ressourcen-<code>SDFILE</code> extrahiert (aus Lizenzgründen nicht im GitHub-Repo enthalten).
+        <strong>Mandatory Before Flashing: Create a Full 2 MB Backup!</strong>
+        Flash offsets starting at <code>0x138000</code> hold your factory calibration (<code>VM</code>), Bluetooth data (<code>BTIF</code>), and MAC address (<code>key_mac</code>).
+        Always pull a full backup first. You also need the stock file <code>T3 Firmware Version-UP 2.0.4.bin</code> locally in the project root,
+        because <code>pack_t3_slot.py</code> extracts the 54,048-byte OEM resource <code>SDFILE</code> from it (excluded from GitHub for licensing reasons).
       </div>
 
       <div class="steps">
         <div class="step">
-          <div class="step-head"><span class="step-num">1</span><h3>Voraussetzungen installieren</h3></div>
-          <p>Benötigt werden <strong>Docker Desktop</strong> (Linux-Container <code>linux/amd64</code>), <strong>Git</strong>, <strong>Python 3.10+</strong> (mit <code>.venv</code>) sowie für <code>jl-uboot-tool</code> ggf. <code>libusbk</code>/<code>WinUSB</code>-Treiber.</p>
+          <div class="step-head"><span class="step-num">1</span><h3>Install Prerequisites</h3></div>
+          <p>Required: <strong>Docker Desktop</strong> (<code>linux/amd64</code> containers), <strong>Git</strong>, <strong>Python 3.10+</strong> (with <code>.venv</code>), and <code>libusbk</code>/<code>WinUSB</code> drivers for <code>jl-uboot-tool</code> if needed.</p>
         </div>
 
         <div class="step">
-          <div class="step-head"><span class="step-num">2</span><h3>Repository klonen &amp; JieLi AC707N SDK laden</h3></div>
-          <p>Das proprietäre JieLi-SDK wird nicht auf GitHub gehostet, sondern einmalig lokal heruntergeladen und entpackt:</p>
+          <div class="step-head"><span class="step-num">2</span><h3>Clone Repository &amp; Fetch JieLi AC707N SDK</h3></div>
+          <p>The proprietary JieLi SDK is not hosted on GitHub and is downloaded locally once:</p>
           <pre>git clone --recursive https://github.com/ThomasSebastianLE/Open-Atorch-T3.git
 cd Open-Atorch-T3
 .\scripts\setup-sdk.ps1</pre>
         </div>
 
         <div class="step">
-          <div class="step-head"><span class="step-num">3</span><h3>Geräte-Backup ziehen (als Administrator)</h3></div>
-          <p>Prüft den USB-ROM-Bootloader-Hook und speichert ein vollständiges 2-MB-Backup unter <code>backups/</code>:</p>
+          <div class="step-head"><span class="step-num">3</span><h3>Pull Full Device Backup (Run as Administrator)</h3></div>
+          <p>Verifies the USB ROM bootloader hook and saves a complete 2 MB dump under <code>backups/</code>:</p>
           <pre>.\.venv\Scripts\python.exe .\scripts\enter_uboot.py --probe
 .\scripts\backup-device.ps1</pre>
         </div>
 
         <div class="step">
-          <div class="step-head"><span class="step-num">4</span><h3>Firmware kompilieren &amp; <code>0x5000</code>-Slot verpacken</h3></div>
-          <p>Wendet das BSP-Overlay an, kompiliert im Ubuntu-Container mit <code>pi32v2</code> Clang und erzeugt den fertig gescrambelten Slot:</p>
+          <div class="step-head"><span class="step-num">4</span><h3>Compile Firmware &amp; Pack <code>0x5000</code> Slot</h3></div>
+          <p>Applies the BSP overlay, compiles inside the Ubuntu container with <code>pi32v2</code> Clang, and generates the scrambled slot binary:</p>
           <pre>.\scripts\build.ps1 -Project meter</pre>
         </div>
 
         <div class="step">
-          <div class="step-head"><span class="step-num">5</span><h3>Firmware auf das ATORCH T3 flashen</h3></div>
-          <p>Versetzt das Gerät in den Bootloader (<code>BR35UBOOT1.00</code>), flasht <code>t3-meter-fw-slot.bin</code> und führt eine Rücklese-Prüfung durch:</p>
+          <div class="step-head"><span class="step-num">5</span><h3>Flash Firmware to the ATORCH T3</h3></div>
+          <p>Reboots the device into the bootloader (<code>BR35UBOOT1.00</code>), flashes <code>t3-meter-fw-slot.bin</code>, and performs a readback verification:</p>
           <pre>.\scripts\flash-slot.ps1 -SlotPath .\firmware-builds\t3-meter-fw-slot.bin</pre>
         </div>
       </div>
     </section>
 
     <section id="recovery">
-      <h2>Notfall-Recovery (Unbrickable)</h2>
-      <p class="section-sub">Falls eine eigene Firmware einmal nicht bootet, bleibt der werkseitige USB-HID-IAP-Bootloader immer erreichbar.</p>
+      <h2>Emergency Recovery (Unbrickable)</h2>
+      <p class="section-sub">Even if a custom firmware fails to boot, the factory USB-HID IAP bootloader always remains accessible.</p>
       <div class="step">
-        <div class="step-head"><span class="step-num">!</span><h3>Wiederherstellung per USB-HID-IAP (<code>ATORCH T3 V1.0.1</code>)</h3></div>
+        <div class="step-head"><span class="step-num">!</span><h3>Restore via USB-HID IAP (<code>ATORCH T3 V1.0.1</code>)</h3></div>
         <p>
-          Halte <strong>beide physischen Taster</strong> am T3 gleichzeitig gedrückt, während du das USB-Kabel einsteckst
-          (Display zeigt <code>product updating</code> / <code>chann usb hid</code>). Danach kannst du die Original-Firmware wieder aufspielen:
+          Hold <strong>both physical buttons</strong> on the T3 simultaneously while plugging in the USB cable
+          (display shows <code>product updating</code> / <code>chann usb hid</code>). Then restore the stock firmware:
         </p>
         <pre>.\.venv\Scripts\python.exe .\scripts\atorch_iap_flash.py "T3 Firmware Version-UP 2.0.4.bin"</pre>
       </div>
@@ -622,7 +622,7 @@ cd Open-Atorch-T3
 
   <footer>
     <div class="container footer-inner">
-      <div>Open-Atorch-T3 · Lizenziert unter <strong>GNU GPLv3</strong> (inkl. JieLi-SDK Linking-Exception)</div>
+      <div>Open-Atorch-T3 · Licensed under <strong>GNU GPLv3</strong> (with JieLi SDK Linking Exception)</div>
       <div><a href="https://github.com/ThomasSebastianLE/Open-Atorch-T3" target="_blank" rel="noopener">github.com/ThomasSebastianLE/Open-Atorch-T3</a></div>
     </div>
   </footer>
