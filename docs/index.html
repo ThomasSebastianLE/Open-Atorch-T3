@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Open-Atorch-T3 — Open-Source Firmware for the ATORCH / JUWEI T3</title>
-  <meta name="description" content="Open GPLv3 custom firmware, board support package, WebBLE dashboard, and recovery tools for the ATORCH / JUWEI T3 USB-C power meter (JieLi AC707N / BR35)." />
+  <meta name="description"
+    content="Open GPLv3 custom firmware, board support package, WebBLE dashboard, and recovery tools for the ATORCH / JUWEI T3 USB-C power meter (JieLi AC707N / BR35)." />
   <style>
     :root {
       --bg: #0b0f17;
@@ -27,20 +29,32 @@
       --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
       font-family: var(--sans);
       background: radial-gradient(1200px 600px at 15% -10%, rgba(56, 189, 248, 0.12), transparent 60%),
-                  radial-gradient(900px 500px at 85% 0%, rgba(129, 140, 248, 0.10), transparent 55%),
-                  var(--bg);
+        radial-gradient(900px 500px at 85% 0%, rgba(129, 140, 248, 0.10), transparent 55%),
+        var(--bg);
       color: var(--text);
       line-height: 1.6;
     }
 
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
 
     .container {
       max-width: 1120px;
@@ -57,6 +71,7 @@
       background: rgba(11, 15, 23, 0.82);
       border-bottom: 1px solid var(--border);
     }
+
     .topbar-inner {
       display: flex;
       align-items: center;
@@ -64,6 +79,7 @@
       height: 60px;
       gap: 16px;
     }
+
     .brand {
       display: flex;
       align-items: center;
@@ -72,6 +88,7 @@
       font-size: 1.05rem;
       color: var(--text);
     }
+
     .brand-dot {
       width: 10px;
       height: 10px;
@@ -79,25 +96,35 @@
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
       box-shadow: 0 0 12px var(--accent);
     }
+
     nav.navlinks {
       display: flex;
       gap: 20px;
       font-size: 0.92rem;
     }
-    nav.navlinks a { color: var(--text-muted); }
-    nav.navlinks a:hover { color: var(--text); text-decoration: none; }
+
+    nav.navlinks a {
+      color: var(--text-muted);
+    }
+
+    nav.navlinks a:hover {
+      color: var(--text);
+      text-decoration: none;
+    }
 
     /* Hero */
     .hero {
       padding: 64px 0 44px;
       border-bottom: 1px solid var(--border);
     }
+
     .badges {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       margin-bottom: 18px;
     }
+
     .badge {
       display: inline-flex;
       align-items: center;
@@ -110,28 +137,33 @@
       background: var(--bg-elev);
       color: var(--text-muted);
     }
+
     .badge.accent {
       border-color: rgba(56, 189, 248, 0.4);
       color: var(--accent);
       background: rgba(56, 189, 248, 0.08);
     }
+
     .hero h1 {
       margin: 0 0 14px;
       font-size: clamp(2rem, 4vw, 3rem);
       line-height: 1.15;
       letter-spacing: -0.02em;
     }
+
     .hero p.lead {
       margin: 0 0 28px;
       max-width: 760px;
       font-size: 1.1rem;
       color: var(--text-muted);
     }
+
     .cta-row {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
     }
+
     .btn {
       display: inline-flex;
       align-items: center;
@@ -145,11 +177,13 @@
       color: var(--text);
       transition: transform 0.12s ease, border-color 0.12s ease;
     }
+
     .btn:hover {
       text-decoration: none;
       border-color: var(--accent);
       transform: translateY(-1px);
     }
+
     .btn.primary {
       background: linear-gradient(135deg, #0284c7, #4f46e5);
       border-color: transparent;
@@ -161,12 +195,17 @@
       padding: 48px 0;
       border-bottom: 1px solid var(--border);
     }
-    section:last-of-type { border-bottom: none; }
+
+    section:last-of-type {
+      border-bottom: none;
+    }
+
     h2 {
       margin: 0 0 8px;
       font-size: 1.65rem;
       letter-spacing: -0.01em;
     }
+
     .section-sub {
       margin: 0 0 26px;
       color: var(--text-muted);
@@ -178,22 +217,26 @@
       grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
       gap: 16px;
     }
+
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 18px;
     }
+
     .card h3 {
       margin: 0 0 8px;
       font-size: 1.02rem;
       color: var(--accent);
     }
+
     .card p {
       margin: 0;
       font-size: 0.92rem;
       color: var(--text-muted);
     }
+
     code {
       font-family: var(--mono);
       font-size: 0.86em;
@@ -211,15 +254,21 @@
       margin-bottom: 24px;
       font-size: 0.94rem;
     }
+
     .callout.danger {
       background: var(--danger-bg);
       border-color: rgba(239, 68, 68, 0.4);
     }
+
     .callout.info {
       background: var(--info-bg);
       border-color: rgba(56, 189, 248, 0.35);
     }
-    .callout strong { display: block; margin-bottom: 4px; }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 4px;
+    }
 
     /* Filter & Table */
     .filters {
@@ -228,6 +277,7 @@
       gap: 8px;
       margin-bottom: 16px;
     }
+
     .filter-btn {
       cursor: pointer;
       background: var(--bg-card);
@@ -238,7 +288,9 @@
       font-size: 0.85rem;
       font-weight: 600;
     }
-    .filter-btn.active, .filter-btn:hover {
+
+    .filter-btn.active,
+    .filter-btn:hover {
       color: var(--text);
       border-color: var(--accent);
       background: rgba(56, 189, 248, 0.12);
@@ -250,18 +302,22 @@
       border-radius: 14px;
       background: var(--bg-card);
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.91rem;
       min-width: 720px;
     }
-    th, td {
+
+    th,
+    td {
       text-align: left;
       padding: 13px 16px;
       border-bottom: 1px solid var(--border);
       vertical-align: top;
     }
+
     th {
       background: var(--bg-elev);
       color: var(--text-muted);
@@ -269,8 +325,14 @@
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
-    tr:last-child td { border-bottom: none; }
-    tr.hidden { display: none; }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr.hidden {
+      display: none;
+    }
 
     .pill {
       display: inline-block;
@@ -280,27 +342,42 @@
       font-weight: 700;
       white-space: nowrap;
     }
-    .pill.ok { background: var(--ok-bg); color: var(--ok); }
-    .pill.warn { background: var(--warn-bg); color: var(--warn); }
-    .pill.info { background: var(--info-bg); color: var(--info); }
+
+    .pill.ok {
+      background: var(--ok-bg);
+      color: var(--ok);
+    }
+
+    .pill.warn {
+      background: var(--warn-bg);
+      color: var(--warn);
+    }
+
+    .pill.info {
+      background: var(--info-bg);
+      color: var(--info);
+    }
 
     /* Steps */
     .steps {
       display: grid;
       gap: 16px;
     }
+
     .step {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 20px;
     }
+
     .step-head {
       display: flex;
       align-items: center;
       gap: 12px;
       margin-bottom: 10px;
     }
+
     .step-num {
       width: 28px;
       height: 28px;
@@ -314,7 +391,12 @@
       font-size: 0.9rem;
       flex-shrink: 0;
     }
-    .step h3 { margin: 0; font-size: 1.05rem; }
+
+    .step h3 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
     pre {
       margin: 10px 0 0;
       background: #090d14;
@@ -334,6 +416,7 @@
       color: var(--text-muted);
       font-size: 0.88rem;
     }
+
     .footer-inner {
       display: flex;
       flex-wrap: wrap;
@@ -342,6 +425,7 @@
     }
   </style>
 </head>
+
 <body>
   <header class="topbar">
     <div class="container topbar-inner">
@@ -375,29 +459,35 @@
       <div class="cta-row">
         <a class="btn primary" href="#install">Install Firmware</a>
         <a class="btn" href="#matrix">Feature &amp; Test Matrix</a>
-        <a class="btn" href="https://github.com/ThomasSebastianLE/Open-Atorch-T3" target="_blank" rel="noopener">Source on GitHub</a>
+        <a class="btn" href="https://github.com/ThomasSebastianLE/Open-Atorch-T3" target="_blank" rel="noopener">Source
+          on GitHub</a>
       </div>
     </section>
 
     <section id="hardware">
       <h2>Hardware Overview</h2>
-      <p class="section-sub">Verified hardware platform &amp; sensors of the ATORCH / JUWEI T3 (documented in detail in <code>AGENTS.md</code>).</p>
+      <p class="section-sub">Verified hardware platform &amp; sensors of the ATORCH / JUWEI T3 (documented in detail in
+        <code>AGENTS.md</code>).</p>
       <div class="grid-4">
         <div class="card">
           <h3>SoC &amp; Storage</h3>
-          <p><strong>Zhuhai JieLi AC707N</strong> (<code>BR35</code>, <code>pi32v2</code> up to 288 MHz, 2D GPU) with 2 MB SPI NOR flash (DTR mode).</p>
+          <p><strong>Zhuhai JieLi AC707N</strong> (<code>BR35</code>, <code>pi32v2</code> up to 288 MHz, 2D GPU) with 2
+            MB SPI NOR flash (DTR mode).</p>
         </div>
         <div class="card">
           <h3>Display &amp; Touch</h3>
-          <p>1.54" IPS 240×240 (<code>ST7789V</code> over hardware <code>JL_DBI</code>, PWM backlight <code>IO_LCD_PG</code>) + <code>CST816D</code> touch on <code>I2C0</code>.</p>
+          <p>1.54" IPS 240×240 (<code>ST7789V</code> over hardware <code>JL_DBI</code>, PWM backlight
+            <code>IO_LCD_PG</code>) + <code>CST816D</code> touch on <code>I2C0</code>.</p>
         </div>
         <div class="card">
           <h3>Precision Metering</h3>
-          <p><code>INA226</code> (1.2–50 V, bidirectional 5 mΩ shunt), <code>PA10</code> GPADC for AC ripple + 256-pt FFT, <code>PC02/PC03</code> for <code>D-/D+</code>, <code>PB00</code> NTC.</p>
+          <p><code>INA226</code> (1.2–50 V, bidirectional 5 mΩ shunt), <code>PA10</code> GPADC for AC ripple + 256-pt
+            FFT, <code>PC02/PC03</code> for <code>D-/D+</code>, <code>PB00</code> NTC.</p>
         </div>
         <div class="card">
           <h3>Sensors &amp; Wireless</h3>
-          <p><code>SC7A20</code> (3-axis accelerometer), <code>ENS220</code> or <code>BMP280</code> (barometer), vibration motor (<code>IO_MT_PG</code>), BLE 5.4 + WebBLE.</p>
+          <p><code>SC7A20</code> (3-axis accelerometer), <code>ENS220</code> or <code>BMP280</code> (barometer),
+            vibration motor (<code>IO_MT_PG</code>), BLE 5.4 + WebBLE.</p>
         </div>
       </div>
     </section>
@@ -405,7 +495,8 @@
     <section id="matrix">
       <h2>Feature &amp; Test Matrix</h2>
       <p class="section-sub">
-        Transparent overview of what is implemented, what is expected to work, and which components have already been verified on real hardware.
+        Transparent overview of what is implemented, what is expected to work, and which components have already been
+        verified on real hardware.
       </p>
 
       <div class="filters" role="group" aria-label="Category filter">
@@ -429,16 +520,18 @@
           </thead>
           <tbody id="matrix-body">
             <tr data-cat="bsp" data-tested="yes">
-              <td><strong>ST7789V 240×240 IPS &amp; Backlight</strong><br><code>JL_DBI</code>, <code>PC00</code>, <code>PA07</code>, <code>IO_LCD_PG</code></td>
+              <td><strong>ST7789V 240×240 IPS &amp; Backlight</strong><br><code>JL_DBI</code>, <code>PC00</code>,
+                <code>PA07</code>, <code>IO_LCD_PG</code></td>
               <td>RGB565 rendering via LVGL v8 with dimmable 10 kHz PWM backlight.</td>
               <td><span class="pill ok">Working</span></td>
               <td>ThomasSebastianLE</td>
             </tr>
             <tr data-cat="bsp" data-tested="yes">
-              <td><strong>CST816D Touchscreen</strong><br><code>I2C0</code> (<code>PA05/PA06</code>), <code>INT=PB08</code></td>
-              <td>Capacitive touch coordinates, tap &amp; swipe gestures.</td>
-              <td><span class="pill warn">Unstable / Buggy</span></td>
-              <td>ThomasSebastianLE</td>
+              <td><strong>CST816D Touchscreen</strong><br><code>I2C0</code> (<code>PA05/PA06</code>),
+                <code>INT=PB08</code></td>
+              <td><code>PB08</code> falling-edge IRQ driver &amp; disabled SDK <code>cst816d_upgrade()</code> flash-overwrite protection.</td>
+              <td><span class="pill warn">Retest pending</span></td>
+              <td>ThomasSebastianLE (IRQ driver verified; retest on untouched panel pending)</td>
             </tr>
             <tr data-cat="bsp" data-tested="yes">
               <td><strong>INA226 Voltage / Current Sensor</strong><br><code>I2C1</code> (<code>0x40</code>)</td>
@@ -471,26 +564,30 @@
               <td>ThomasSebastianLE (80 ms/65% was too weak; 200 ms built, retest pending)</td>
             </tr>
             <tr data-cat="bsp" data-tested="no">
-              <td><strong>NTC Temperature &amp; USB D+/D-</strong><br><code>PB00</code>, <code>PC02/PC03</code> GPADC</td>
-              <td>Board temperature (-35..+131 °C) and <code>D+</code>/<code>D-</code> voltages for fast-charge detection.</td>
+              <td><strong>NTC Temperature &amp; USB D+/D-</strong><br><code>PB00</code>, <code>PC02/PC03</code> GPADC
+              </td>
+              <td>Board temperature (-35..+131 °C) and <code>D+</code>/<code>D-</code> voltages for fast-charge
+                detection.</td>
               <td><span class="pill info">Should work</span></td>
               <td>Not yet tested in <code>t3-meter-fw</code></td>
             </tr>
-            <tr data-cat="bsp" data-tested="no">
-              <td><strong>Physical Button</strong><br><code>PB07</code></td>
-              <td>Short/long-press navigation alongside the touchscreen.</td>
-              <td><span class="pill info">Should work</span></td>
-              <td>Untested</td>
+            <tr data-cat="bsp" data-tested="yes">
+              <td><strong>Physical Buttons</strong><br><code>PB07</code> (Right) &amp; <code>PA11</code> (Left)</td>
+              <td>Dual-button navigation (short/long press) plus <code>SC7A20</code> tilt navigation.</td>
+              <td><span class="pill ok">Working</span></td>
+              <td>ThomasSebastianLE</td>
             </tr>
             <tr data-cat="meter" data-tested="no">
-              <td><strong>MTR Tab (Live Meter)</strong><br><code>IN/OUT mAh</code>, <code>3.7V</code> cell capacity, <code>BANK A/B/C</code>, Big-Numbers</td>
+              <td><strong>MTR Tab (Live Meter)</strong><br><code>IN/OUT mAh</code>, <code>3.7V</code> cell capacity,
+                <code>BANK A/B/C</code>, Big-Numbers</td>
               <td>Main view with separate charge/discharge counters, peak values, and 3 persistent banks.</td>
               <td><span class="pill info">Implemented</span></td>
               <td>Field test pending</td>
             </tr>
             <tr data-cat="meter" data-tested="no">
               <td><strong>CRV Tab (Real-Time Curve)</strong><br><code>lv_chart</code>, Brownout Counter</td>
-              <td>Live voltage &amp; current chart, <code>Vmin/Vmax</code>, <code>Ipeak</code>, brownout detection (&lt; 4.50 V).</td>
+              <td>Live voltage &amp; current chart, <code>Vmin/Vmax</code>, <code>Ipeak</code>, brownout detection (&lt;
+                4.50 V).</td>
               <td><span class="pill info">Implemented</span></td>
               <td>Field test pending</td>
             </tr>
@@ -502,7 +599,8 @@
             </tr>
             <tr data-cat="meter" data-tested="no">
               <td><strong>CBL Tab (Cable &amp; Droop Test)</strong><br>2-step measurement</td>
-              <td>Calculates <code>R_cable</code> (mΩ) and voltage droop (<code>mV</code> / <code>%</code>) under load.</td>
+              <td>Calculates <code>R_cable</code> (mΩ) and voltage droop (<code>mV</code> / <code>%</code>) under load.
+              </td>
               <td><span class="pill info">Implemented</span></td>
               <td>Field test pending</td>
             </tr>
@@ -514,7 +612,8 @@
             </tr>
             <tr data-cat="meter" data-tested="no">
               <td><strong>SET Tab &amp; VM Persistence</strong><br><code>syscfg_write</code></td>
-              <td>Brightness, haptics, auto-rotation, BLE beacon, alerts, gain calibration, <code>ZERO I</code>, <code>SAVE VM</code>, <code>UBOOT</code>.</td>
+              <td>Brightness, haptics, auto-rotation, BLE beacon, alerts, gain calibration, <code>ZERO I</code>,
+                <code>SAVE VM</code>, <code>UBOOT</code>.</td>
               <td><span class="pill info">Implemented</span></td>
               <td>Field test pending</td>
             </tr>
@@ -524,27 +623,32 @@
               <td><span class="pill info">Implemented</span></td>
               <td>Field test pending</td>
             </tr>
-            <tr data-cat="tools" data-tested="no">
-              <td><strong>BLE Beacon, GATT &amp; WebBLE App</strong><br><code>T3_MTR</code>, <code>0xFFE0/1/2</code>, <code>webble/index.html</code></td>
-              <td>Live telemetry over BLE advertising &amp; GATT in the browser dashboard.</td>
-              <td><span class="pill info">Implemented</span></td>
-              <td>Field test pending</td>
+            <tr data-cat="tools" data-tested="yes">
+              <td><strong>BLE Beacon, GATT &amp; WebBLE App</strong><br><code>T3_MTR</code>, <code>0xFFE0/1/2</code>,
+                <code>webble/index.html</code></td>
+              <td>Live 36-byte ATorch telemetry over native RCSP BLE GATT in the Chrome WebBLE dashboard.</td>
+              <td><span class="pill ok">Working</span></td>
+              <td>ThomasSebastianLE</td>
             </tr>
             <tr data-cat="tools" data-tested="yes">
               <td><strong>2 MB Full-Flash Backup</strong><br><code>scripts/backup-device.ps1</code></td>
-              <td>Complete flash dump including <code>VM</code> calibration, <code>BTIF</code>, and <code>key_mac</code> before first flash.</td>
+              <td>Complete flash dump including <code>VM</code> calibration, <code>BTIF</code>, and <code>key_mac</code>
+                before first flash.</td>
               <td><span class="pill ok">Working</span></td>
               <td>ThomasSebastianLE (2× bit-identical verified)</td>
             </tr>
             <tr data-cat="tools" data-tested="yes">
-              <td><strong>Slot Packaging &amp; USB Flash</strong><br><code>pack_t3_slot.py</code> + <code>flash-slot.ps1</code></td>
-              <td>Embeds OEM resource <code>SDFILE</code> (54,048 B), scrambles <code>0x5000</code> slot, and flashes with readback verify.</td>
+              <td><strong>Slot Packaging &amp; USB Flash</strong><br><code>pack_t3_slot.py</code> +
+                <code>flash-slot.ps1</code></td>
+              <td>Embeds OEM resource <code>SDFILE</code> (54,048 B), scrambles <code>0x5000</code> slot, and flashes
+                with readback verify.</td>
               <td><span class="pill ok">Working</span></td>
               <td>ThomasSebastianLE</td>
             </tr>
             <tr data-cat="tools" data-tested="yes">
               <td><strong>Hardware Recovery (USB-HID-IAP)</strong><br><code>scripts/atorch_iap_flash.py</code></td>
-              <td>Restores stock or custom firmware independently of the <code>0x5000</code> slot via dual-button boot combo.</td>
+              <td>Restores stock or custom firmware independently of the <code>0x5000</code> slot via dual-button boot
+                combo.</td>
               <td><span class="pill ok">Working</span></td>
               <td>ThomasSebastianLE</td>
             </tr>
@@ -554,30 +658,42 @@
 
       <div class="callout info" style="margin-top: 18px;">
         <strong>Community Testing Welcome!</strong>
-        Did you test a feature on your T3 (or do you own a board with <code>BMP280</code> instead of <code>ENS220</code>)?
-        Please open a <a href="https://github.com/ThomasSebastianLE/Open-Atorch-T3/issues" target="_blank" rel="noopener">GitHub Issue</a> or Pull Request so we can update this matrix.
+        Did you test a feature on your T3 (or do you own a board with <code>BMP280</code> instead of
+        <code>ENS220</code>)?
+        Please open a <a href="https://github.com/ThomasSebastianLE/Open-Atorch-T3/issues" target="_blank"
+          rel="noopener">GitHub Issue</a> or Pull Request so we can update this matrix.
       </div>
     </section>
 
     <section id="install">
       <h2>Build &amp; Installation Guide</h2>
-      <p class="section-sub">Reproducible build &amp; flash pipeline for Windows (PowerShell) using the Docker toolchain.</p>
+      <p class="section-sub">Reproducible build &amp; flash pipeline for Windows (PowerShell) using the Docker
+        toolchain.</p>
 
       <div class="callout danger">
         <strong>Mandatory Before Flashing: Create a Full 2 MB Backup!</strong>
-        Flash offsets starting at <code>0x138000</code> hold your factory calibration (<code>VM</code>), Bluetooth data (<code>BTIF</code>), and MAC address (<code>key_mac</code>).
-        Always pull a full backup first. You also need the stock file <code>T3 Firmware Version-UP 2.0.4.bin</code> locally in the project root,
-        because <code>pack_t3_slot.py</code> extracts the 54,048-byte OEM resource <code>SDFILE</code> from it (excluded from GitHub for licensing reasons).
+        Flash offsets starting at <code>0x138000</code> hold your factory calibration (<code>VM</code>), Bluetooth data
+        (<code>BTIF</code>), and MAC address (<code>key_mac</code>).
+        Always pull a full backup first. You also need the stock file <code>T3 Firmware Version-UP 2.0.4.bin</code>
+        locally in the project root,
+        because <code>pack_t3_slot.py</code> extracts the 54,048-byte OEM resource <code>SDFILE</code> from it (excluded
+        from GitHub for licensing reasons).
       </div>
 
       <div class="steps">
         <div class="step">
-          <div class="step-head"><span class="step-num">1</span><h3>Install Prerequisites</h3></div>
-          <p>Required: <strong>Docker Desktop</strong> (<code>linux/amd64</code> containers), <strong>Git</strong>, <strong>Python 3.10+</strong> (with <code>.venv</code>), and <code>libusbk</code>/<code>WinUSB</code> drivers for <code>jl-uboot-tool</code> if needed.</p>
+          <div class="step-head"><span class="step-num">1</span>
+            <h3>Install Prerequisites</h3>
+          </div>
+          <p>Required: <strong>Docker Desktop</strong> (<code>linux/amd64</code> containers), <strong>Git</strong>,
+            <strong>Python 3.10+</strong> (with <code>.venv</code>), and <code>libusbk</code>/<code>WinUSB</code>
+            drivers for <code>jl-uboot-tool</code> if needed.</p>
         </div>
 
         <div class="step">
-          <div class="step-head"><span class="step-num">2</span><h3>Clone Repository &amp; Fetch JieLi AC707N SDK</h3></div>
+          <div class="step-head"><span class="step-num">2</span>
+            <h3>Clone Repository &amp; Fetch JieLi AC707N SDK</h3>
+          </div>
           <p>The proprietary JieLi SDK is not hosted on GitHub and is downloaded locally once:</p>
           <pre>git clone --recursive https://github.com/ThomasSebastianLE/Open-Atorch-T3.git
 cd Open-Atorch-T3
@@ -585,21 +701,29 @@ cd Open-Atorch-T3
         </div>
 
         <div class="step">
-          <div class="step-head"><span class="step-num">3</span><h3>Pull Full Device Backup (Run as Administrator)</h3></div>
+          <div class="step-head"><span class="step-num">3</span>
+            <h3>Pull Full Device Backup (Run as Administrator)</h3>
+          </div>
           <p>Verifies the USB ROM bootloader hook and saves a complete 2 MB dump under <code>backups/</code>:</p>
           <pre>.\.venv\Scripts\python.exe .\scripts\enter_uboot.py --probe
 .\scripts\backup-device.ps1</pre>
         </div>
 
         <div class="step">
-          <div class="step-head"><span class="step-num">4</span><h3>Compile Firmware &amp; Pack <code>0x5000</code> Slot</h3></div>
-          <p>Applies the BSP overlay, compiles inside the Ubuntu container with <code>pi32v2</code> Clang, and generates the scrambled slot binary:</p>
+          <div class="step-head"><span class="step-num">4</span>
+            <h3>Compile Firmware &amp; Pack <code>0x5000</code> Slot</h3>
+          </div>
+          <p>Applies the BSP overlay, compiles inside the Ubuntu container with <code>pi32v2</code> Clang, and generates
+            the scrambled slot binary:</p>
           <pre>.\scripts\build.ps1 -Project meter</pre>
         </div>
 
         <div class="step">
-          <div class="step-head"><span class="step-num">5</span><h3>Flash Firmware to the ATORCH T3</h3></div>
-          <p>Reboots the device into the bootloader (<code>BR35UBOOT1.00</code>), flashes <code>t3-meter-fw-slot.bin</code>, and performs a readback verification:</p>
+          <div class="step-head"><span class="step-num">5</span>
+            <h3>Flash Firmware to the ATORCH T3</h3>
+          </div>
+          <p>Reboots the device into the bootloader (<code>BR35UBOOT1.00</code>), flashes
+            <code>t3-meter-fw-slot.bin</code>, and performs a readback verification:</p>
           <pre>.\scripts\flash-slot.ps1 -SlotPath .\firmware-builds\t3-meter-fw-slot.bin</pre>
         </div>
       </div>
@@ -607,9 +731,12 @@ cd Open-Atorch-T3
 
     <section id="recovery">
       <h2>Emergency Recovery (Unbrickable)</h2>
-      <p class="section-sub">Even if a custom firmware fails to boot, the factory USB-HID IAP bootloader always remains accessible.</p>
+      <p class="section-sub">Even if a custom firmware fails to boot, the factory USB-HID IAP bootloader always remains
+        accessible.</p>
       <div class="step">
-        <div class="step-head"><span class="step-num">!</span><h3>Restore via USB-HID IAP (<code>ATORCH T3 V1.0.1</code>)</h3></div>
+        <div class="step-head"><span class="step-num">!</span>
+          <h3>Restore via USB-HID IAP (<code>ATORCH T3 V1.0.1</code>)</h3>
+        </div>
         <p>
           Hold <strong>both physical buttons</strong> on the T3 simultaneously while plugging in the USB cable
           (display shows <code>product updating</code> / <code>chann usb hid</code>). Then restore the stock firmware:
@@ -622,7 +749,8 @@ cd Open-Atorch-T3
   <footer>
     <div class="container footer-inner">
       <div>Open-Atorch-T3 · Licensed under <strong>GNU GPLv3</strong> (with JieLi SDK Linking Exception)</div>
-      <div><a href="https://github.com/ThomasSebastianLE/Open-Atorch-T3" target="_blank" rel="noopener">github.com/ThomasSebastianLE/Open-Atorch-T3</a></div>
+      <div><a href="https://github.com/ThomasSebastianLE/Open-Atorch-T3" target="_blank"
+          rel="noopener">github.com/ThomasSebastianLE/Open-Atorch-T3</a></div>
     </div>
   </footer>
 
@@ -648,4 +776,5 @@ cd Open-Atorch-T3
     })();
   </script>
 </body>
+
 </html>

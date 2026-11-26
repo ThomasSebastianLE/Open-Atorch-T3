@@ -21,6 +21,9 @@ static u8  g_tp_probe_addr = 0;
 static u8  g_tp_chip_id = 0;
 static u16 g_tp_ack_cnt = 0;
 static u8  g_tp_raw5[5] = {0};
+static volatile u8 g_tp_irq_pending = 0;
+static u8  g_tp_pressed = 0;
+static u32 g_tp_last_irq_ms = 0;
 
 /* --- Bit-banged open-drain Soft-I2C helper (shared by I2C0 touch & I2C1 sensors) --- */
 
@@ -202,40 +205,59 @@ static int t3_i2c1_read_reg(u8 addr7, u8 reg, u8 *buf, u8 len)
     return soft_i2c_read_reg(&s_i2c1, addr7, reg, buf, len);
 }
 
+static void t3_tp_irq_cb(enum gpio_port port, u32 pin, enum gpio_irq_edge edge)
+{
+    (void)port;
+    (void)pin;
+    (void)edge;
+    g_tp_irq_pending = 1;
+}
+
+static struct gpio_irq_config_st s_tp_irq_cfg = {
+    .pin = NO_CONFIG_PORT,
+    .irq_edge = PORT_IRQ_EDGE_FALL,
+    .callback = t3_tp_irq_cb,
+    .irq_priority = 3,
+};
+
 void t3_bsp_get_touch(s16 *x, s16 *y, u8 *pressed)
 {
-    u8 buf[5] = {0};
-    u8 st = 0;
-    u8 addr = g_tp_probe_addr ? g_tp_probe_addr : T3_TP_I2C_ADDR;
-    if (soft_i2c_read_reg(&s_i2c0, addr, 0x02, buf, sizeof(buf)) == 0) {
-        g_tp_ack_cnt++;
-        memcpy(g_tp_raw5, buf, 5);
-        static u8 s_tp_was_pressed = 0;
-        u8 fingers = buf[0] & 0x0FU;
-        s16 rx = (s16)(((u16)(buf[1] & 0x0FU) << 8) | buf[2]);
-        s16 ry = (s16)(((u16)(buf[3] & 0x0FU) << 8) | buf[4]);
-        if (fingers == 1U && (rx != 0 || ry != 0)) {
-            s16 sx = (s16)(((s32)rx * (s32)T3_LCD_WIDTH) / 320);
-            s16 sy = (s16)((((s32)ry - 230) * (s32)T3_LCD_HEIGHT) / 138);
-            if (sx < 0) sx = 0;
-            if (sx >= T3_LCD_WIDTH) sx = T3_LCD_WIDTH - 1;
-            if (sy < 0) sy = 0;
-            if (sy >= T3_LCD_HEIGHT) sy = T3_LCD_HEIGHT - 1;
-            if (s_tp_was_pressed) {
-                sx = (s16)((g_tp_last_x + sx) / 2);
-                sy = (s16)((g_tp_last_y + sy) / 2);
+    u8 do_read = g_tp_irq_pending || (gpio_read(T3_TP_INT_IO) == 0);
+    u32 now_ms = timer_get_ms();
+    if (!do_read && g_tp_pressed && (now_ms - g_tp_last_irq_ms > 150U)) {
+        do_read = 1;
+    }
+
+    if (do_read) {
+        u8 buf[5] = {0};
+        u8 addr = g_tp_probe_addr ? g_tp_probe_addr : T3_TP_I2C_ADDR;
+        g_tp_irq_pending = 0;
+        if (soft_i2c_read_reg(&s_i2c0, addr, 0x02, buf, sizeof(buf)) == 0) {
+            g_tp_ack_cnt++;
+            memcpy(g_tp_raw5, buf, 5);
+            g_tp_last_irq_ms = now_ms;
+            u8 fingers = buf[0] & 0x0FU;
+            s16 rx = (s16)(((u16)(buf[1] & 0x0FU) << 8) | buf[2]);
+            s16 ry = (s16)(((u16)(buf[3] & 0x0FU) << 8) | buf[4]);
+            if (fingers != 0U) {
+                if (rx < 0) rx = 0;
+                if (rx >= T3_LCD_WIDTH) rx = T3_LCD_WIDTH - 1;
+                if (ry < 0) ry = 0;
+                if (ry >= T3_LCD_HEIGHT) ry = T3_LCD_HEIGHT - 1;
+                g_tp_last_x = rx;
+                g_tp_last_y = ry;
+                g_tp_pressed = 1U;
+            } else {
+                g_tp_pressed = 0U;
             }
-            s_tp_was_pressed = 1;
-            g_tp_last_x = sx;
-            g_tp_last_y = sy;
-            st = 1U;
-        } else {
-            s_tp_was_pressed = 0;
+        } else if (g_tp_pressed && (now_ms - g_tp_last_irq_ms > 150U)) {
+            g_tp_pressed = 0U;
         }
     }
+
     if (x) *x = g_tp_last_x;
     if (y) *y = g_tp_last_y;
-    if (pressed) *pressed = st;
+    if (pressed) *pressed = g_tp_pressed;
 }
 
 void t3_bsp_get_touch_diag(u8 *probe_addr, u8 *int_lvl, u16 *ack_cnt, u8 *raw5, s16 *last_x, s16 *last_y)
@@ -369,6 +391,13 @@ void t3_bsp_init(void)
             soft_i2c_read_reg(&s_i2c0, 0x15, 0xA7, &g_tp_chip_id, 1);
         }
     }
+    {
+        u8 port_x = T3_TP_INT_IO / IO_GROUP_NUM;
+        u16 port_pin_x = BIT(T3_TP_INT_IO % IO_GROUP_NUM);
+        s_tp_irq_cfg.pin = port_pin_x;
+        gpio_set_mode(IO_PORT_SPILT(T3_TP_INT_IO), PORT_INPUT_PULLUP_10K);
+        gpio_irq_config(port_x, &s_tp_irq_cfg);
+    }
 
     soft_i2c_bus_init(&s_i2c1);
     t3_bsp_probe_sensors(&g_inventory);
@@ -441,45 +470,15 @@ int t3_bsp_read_sc7a20(t3_accel_sample_t *out)
     return 0;
 }
 
-static u8 g_k2_mode[19] = {0}; /* 0=unused, 1=active-LOW, 2=active-HIGH */
-
 u32 t3_bsp_scan_keys(const char **first_pin_name)
 {
-    /* Bit 0: verified hardware button PB07 (RESET=PB07_08_0 in isd_config.ini).
-       Bit 1: safe auto-probe across all unused GPIOs (active-LOW or active-HIGH). */
-    static const u32 k2_pins[19] = {
-        IO_PORTA_00, IO_PORTA_01, IO_PORTA_03, IO_PORTA_04,
-        IO_PORTA_08, IO_PORTA_09, IO_PORTA_11, IO_PORTA_12,
-        IO_PORTA_13, IO_PORTA_14, IO_PORTA_15,
-        IO_PORTB_03, IO_PORTB_04, IO_PORTB_05, IO_PORTB_06, IO_PORTB_09,
-        IO_PORTC_01, IO_PORTC_04, IO_PORTC_05
-    };
-    static const char *const k2_names[19] = {
-        "PA00", "PA01", "PA03", "PA04",
-        "PA08", "PA09", "PA11", "PA12",
-        "PA13", "PA14", "PA15",
-        "PB03", "PB04", "PB05", "PB06", "PB09",
-        "PC01", "PC04", "PC05"
-    };
-
+    /* OEM-verified buttons from T3 V2.0.4 (key_init @ 0x0c0b7388..0x0c0b73ba):
+       Bit 0: IO_PORTB_07 (23, PB07, key_value=0x51, ONE_PORT_TO_LOW, 10k pull-up)
+       Bit 1: IO_PORTA_11 (11, PA11, key_value=0x53, ONE_PORT_TO_LOW, 10k pull-up) */
     if (!g_keys_initialized) {
         gpio_set_mode(IO_PORT_SPILT(IO_PORTB_07), PORT_INPUT_PULLUP_10K);
-        for (int i = 0; i < 19; i++) {
-            g_k2_mode[i] = 0;
-            gpio_set_mode(IO_PORT_SPILT(k2_pins[i]), PORT_INPUT_PULLUP_10K);
-        }
+        gpio_set_mode(IO_PORT_SPILT(IO_PORTA_11), PORT_INPUT_PULLUP_10K);
         udelay(50);
-        for (int i = 0; i < 19; i++) {
-            if (gpio_read(k2_pins[i]) != 0) {
-                g_k2_mode[i] = 1; /* idle-HIGH -> active-LOW button */
-            } else {
-                gpio_set_mode(IO_PORT_SPILT(k2_pins[i]), PORT_INPUT_PULLDOWN_10K);
-                udelay(20);
-                if (gpio_read(k2_pins[i]) == 0) {
-                    g_k2_mode[i] = 2; /* idle-LOW -> active-HIGH button */
-                }
-            }
-        }
         g_keys_initialized = 1;
     }
 
@@ -489,17 +488,9 @@ u32 t3_bsp_scan_keys(const char **first_pin_name)
         mask |= (1U << 0);
         name = "PB07";
     }
-    for (int i = 0; i < 19; i++) {
-        if (g_k2_mode[i] == 1 && gpio_read(k2_pins[i]) == 0) {
-            mask |= (1U << 1);
-            if (!name) name = k2_names[i];
-            break;
-        }
-        if (g_k2_mode[i] == 2 && gpio_read(k2_pins[i]) != 0) {
-            mask |= (1U << 1);
-            if (!name) name = k2_names[i];
-            break;
-        }
+    if (gpio_read(IO_PORTA_11) == 0) {
+        mask |= (1U << 1);
+        if (!name) name = "PA11";
     }
     if (first_pin_name) {
         *first_pin_name = name;

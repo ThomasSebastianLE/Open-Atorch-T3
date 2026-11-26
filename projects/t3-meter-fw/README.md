@@ -4,7 +4,7 @@ An open, clean, fast, and feature-rich power meter firmware for the ATORCH / JUW
 
 ## Implemented Features (v1.1)
 
-* **6-Tab LVGL v8 UI (`MTR`, `CRV`, `RPL`, `CBL`, `SNS`, `SET`) + `PB07` button:**
+* **6-Tab LVGL v8 UI (`LIVE`, `CURVE`, `RIPPLE`, `CABLE`, `PROTO`, `SETUP`) with 2-button (`PB07` right + `PA11` left) & `SC7A20` tilt navigation** *(touch pointer input is disabled by default pending retest on an untouched CST816 panel; the `PB08` falling-edge IRQ driver in `shared/t3-bsp` is ready and SDK `cst816d_upgrade()` is permanently disabled)*:
   * **MTR (Live Meter):** `VBUS`, bidirectional `IBUS`, power `W`, separate `IN / OUT` counters (`+mAh / -mAh`), `3.7 V` powerbank cell capacity, `Wh`, peak values (`Pmax`, `Ipeak`), runtime, **3 persistent memory banks (`BANK A/B/C`)**, and **Big-Numbers mode** by tapping the measurement area.
   * **CRV (Real-Time Curve):** `lv_chart` for `V` & `I`, `Vmin/Vmax`, `Ipeak`, and **brownout counter** (`VBUS < 4.50 V` under load).
   * **RPL (AC Ripple Oscilloscope):** `PA10` GPADC capture, `Vpp`, moving average, dominant switching frequency (`Hz`/`kHz`), and **PSU quality rating** (`VERY CLEAN < 30 mVpp` / `OK` / `HIGH NOISE >= 80 mVpp`).
@@ -15,8 +15,8 @@ An open, clean, fast, and feature-rich power meter firmware for the ATORCH / JUW
   * Charge end (`< 50 mA` after prior load), overvoltage (`> 21 V`), overcurrent (`> 5 A`), and overtemperature (`> 60 °C`).
 * **Offline Blackbox Ring Buffer:**
   * Stores `(V, I, W, °C)` every 10 s in RAM (60 entries = 10 min).
-* **Bluetooth / BLE Beacon & WebBLE App:**
-  * Toggleable **BLE Beacon** in `SET` (Company ID `0x5433`, 16-byte telemetry payload, device name `T3_MTR`) plus ATorch-compatible GATT (`0xFFE0`/`0xFFE1`/`0xFFE2`).
+* **Bluetooth / BLE GATT & WebBLE App:**
+  * Native RCSP BLE GATT (`T3_MTR`, ATorch-compatible service `0xFFE0` with `0xFFE1` Notify/RX and `0xFFE2` RX, 36-byte telemetry frames every 1 s) — verified live in Chrome WebBLE.
   * See [`docs/BLE_APP_PROTOCOL.md`](docs/BLE_APP_PROTOCOL.md) for the full app protocol spec and [`webble/index.html`](webble/index.html) for the browser dashboard.
 
 ## Build & Flash

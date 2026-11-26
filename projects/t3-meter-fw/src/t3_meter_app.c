@@ -550,18 +550,6 @@ static void execute_setup_item(u8 idx)
     }
 }
 
-/* --- Touch Driver (optional passive read, no cursor dot) --- */
-static void meter_touch_read_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
-{
-    (void)drv;
-    s16 tx = 0, ty = 0;
-    u8 pressed = 0;
-    t3_bsp_get_touch(&tx, &ty, &pressed);
-    data->point.x = (lv_coord_t)tx;
-    data->point.y = (lv_coord_t)ty;
-    data->state = pressed ? LV_INDEV_STATE_PR : LV_INDEV_STATE_REL;
-}
-
 static void handle_key2_short(void)
 {
     switch (s_page) {
@@ -587,41 +575,15 @@ static void handle_key2_short(void)
     }
 }
 
-static void update_ble_beacon(u8 alarm_flag, u8 full_flag)
+static void send_atorch_gatt_telemetry(void)
 {
     if (!s_cfg.ble_beacon_on) return;
 
-    u8 payload[16];
     meter_bank_t *b = &s_banks[s_cfg.active_bank];
-    u16 v_mv = (s_last_v_mv > 0) ? (u16)s_last_v_mv : 0U;
-    s16 i_ma = (s16)s_last_i_ma;
-    u32 p_mw = (s_last_p_mw > 0) ? (u32)s_last_p_mw : 0U;
     u32 mah_tot = (u32)((b->mah_out_uahs + b->mah_in_uahs) / 3600000ULL);
-    u8 flags = (u8)((alarm_flag ? 0x01U : 0U) |
-                    (full_flag ? 0x02U : 0U) |
-                    (s_brownout_cnt > 0 ? 0x04U : 0U));
-
-    payload[0]  = (u8)(v_mv & 0xFFU);
-    payload[1]  = (u8)((v_mv >> 8) & 0xFFU);
-    payload[2]  = (u8)((u16)i_ma & 0xFFU);
-    payload[3]  = (u8)(((u16)i_ma >> 8) & 0xFFU);
-    payload[4]  = (u8)(p_mw & 0xFFU);
-    payload[5]  = (u8)((p_mw >> 8) & 0xFFU);
-    payload[6]  = (u8)((p_mw >> 16) & 0xFFU);
-    payload[7]  = (u8)((p_mw >> 24) & 0xFFU);
-    payload[8]  = (u8)(mah_tot & 0xFFU);
-    payload[9]  = (u8)((mah_tot >> 8) & 0xFFU);
-    payload[10] = (u8)((mah_tot >> 16) & 0xFFU);
-    payload[11] = (u8)((mah_tot >> 24) & 0xFFU);
-    payload[12] = (u8)((u16)s_last_temp_dc & 0xFFU);
-    payload[13] = (u8)(((u16)s_last_temp_dc >> 8) & 0xFFU);
-    payload[14] = s_last_proto_id;
-    payload[15] = flags;
-
-    t3_ble_beacon_update(1, payload);
 
     /* Send 36-byte ATorch GATT telemetry packet on 0xFFE1 if WebBLE is connected */
-    u8 pkt[36];
+    static u8 pkt[36];
     memset(pkt, 0, sizeof(pkt));
     pkt[0] = 0xFF; pkt[1] = 0x55; pkt[2] = 0x01; pkt[3] = 0x03;
     u32 v_c = (u32)((s_last_v_mv > 0 ? s_last_v_mv : 0) / 10);
@@ -727,7 +689,7 @@ static void meter_tick_cb(lv_timer_t *tmr)
     s_prev_key_mask = keys;
 
     /* 1. Fast INA226 sampling (100 ms) */
-    t3_meter_sample_t m;
+    static t3_meter_sample_t m;
     if (t3_bsp_read_ina226(&m) == 0 && m.valid) {
         s32 v_mv = (m.vbus_mv * s_cfg.v_gain_permille) / 1000;
         s32 raw_i = m.ibus_ma - s_cfg.ibus_zero_ma;
@@ -801,7 +763,7 @@ static void meter_tick_cb(lv_timer_t *tmr)
         }
 
         if (s_page == PAGE_METER) {
-            char vs[16], is[16], ps[16], ebuf[56], pbuf[56];
+            static char vs[16], is[16], ps[16], ebuf[56], pbuf[56];
             fmt_fixed(vs, sizeof(vs), v_mv, " V", 3);
             fmt_fixed(is, sizeof(is), i_ma, " A", 3);
             fmt_fixed(ps, sizeof(ps), p_mw / 10, " W", 2);
@@ -834,7 +796,9 @@ static void meter_tick_cb(lv_timer_t *tmr)
         }
 
         if ((s_tick_div % 10U) == 0U) {
-            update_ble_beacon(alarm_hit, full_hit);
+            (void)alarm_hit;
+            (void)full_hit;
+            send_atorch_gatt_telemetry();
         }
 
         /* Update CURVE bar history every 200 ms */
@@ -861,7 +825,7 @@ static void meter_tick_cb(lv_timer_t *tmr)
                     lv_obj_set_size(s_curve_i_bars[k], 3, ih);
                     lv_obj_set_pos(s_curve_i_bars[k], 4 + k * 8, 160 - ih);
                 }
-                char cbuf[52];
+                static char cbuf[52];
                 s32 vmin_c = (s_v_min_mv == 0x7FFFFFFF) ? 0 : (s_v_min_mv / 10);
                 s32 vmax_c = s_v_max_mv / 10;
                 lv_snprintf(cbuf, sizeof(cbuf), "V:%ld.%02ld..%ld.%02ldV Ip:%ld.%02ldA Drp:%u",
@@ -901,7 +865,7 @@ static void meter_tick_cb(lv_timer_t *tmr)
                 qcol = 0xFACC15;
             }
             lv_obj_set_style_text_color(s_lbl_ripple_info, lv_color_hex(qcol), LV_PART_MAIN);
-            char rbuf[64];
+            static char rbuf[64];
             if (freq_hz >= 1000U) {
                 lv_snprintf(rbuf, sizeof(rbuf), "Vpp:%lumV Avg:%lumV %lu.%lukHz\nPSU: %s",
                             (unsigned long)vpp, (unsigned long)s_ripple_avg_mv,
@@ -922,7 +886,7 @@ static void meter_tick_cb(lv_timer_t *tmr)
         const char *proto = detect_usb_proto(s_last_v_mv, s_last_dp_mv, s_last_dm_mv, &s_last_proto_id);
 
         if (s_page == PAGE_METER && !s_cfg.big_mode) {
-            char pbuf[52];
+            static char pbuf[52];
             s16 td = s_last_temp_dc;
             const char *ts = (td < 0) ? "-" : "";
             s16 ta = (td < 0) ? -td : td;
@@ -932,7 +896,7 @@ static void meter_tick_cb(lv_timer_t *tmr)
         }
 
         if (s_page == PAGE_SENSORS) {
-            char ubuf[64], dps[12], dms[12];
+            static char ubuf[64], dps[12], dms[12];
             fmt_fixed(dps, sizeof(dps), s_last_dp_mv, "V", 2);
             fmt_fixed(dms, sizeof(dms), s_last_dm_mv, "V", 2);
             lv_snprintf(ubuf, sizeof(ubuf), "%s\nD+:%s  D-:%s  NTC:%d.%dC",
@@ -941,9 +905,9 @@ static void meter_tick_cb(lv_timer_t *tmr)
                         (int)(s_last_temp_dc < 0 ? (-s_last_temp_dc) % 10 : s_last_temp_dc % 10));
             lv_label_set_text(s_lbl_sns_usb, ubuf);
 
-            t3_baro_sample_t b;
+            static t3_baro_sample_t b;
             if (t3_bsp_read_baro(&b, s_cfg.sea_level_pa) == 0 && b.valid) {
-                char bbuf[48];
+                static char bbuf[48];
                 lv_snprintf(bbuf, sizeof(bbuf), "%s %lu.%02luhPa  %ld.%ldm",
                             b.is_ens220 ? "ENS" : "BMP",
                             (unsigned long)(b.pressure_pa / 100U),
@@ -960,7 +924,7 @@ static void meter_tick_cb(lv_timer_t *tmr)
     /* 4. SC7A20 Tilt/Knock page navigation & level bubble every 100 ms */
     if (s_tilt_cooldown > 0) s_tilt_cooldown--;
     if (s_cfg.tilt_nav_on || s_page == PAGE_SENSORS) {
-        t3_accel_sample_t acc;
+        static t3_accel_sample_t acc;
         if (t3_bsp_read_sc7a20(&acc) == 0 && acc.valid) {
             if (s_page == PAGE_SENSORS && s_obj_bubble) {
                 int bx = 27 + (acc.ax / 45);
@@ -970,7 +934,7 @@ static void meter_tick_cb(lv_timer_t *tmr)
                 if (by < 4) by = 4;
                 if (by > 50) by = 50;
                 lv_obj_set_pos(s_obj_bubble, bx - 5, by - 5);
-                char abuf[32];
+                static char abuf[32];
                 lv_snprintf(abuf, sizeof(abuf), "G: X=%d Y=%d", (int)(acc.ax / 11), (int)(acc.ay / 11));
                 lv_label_set_text(s_lbl_sns_acc, abuf);
             }
@@ -1163,12 +1127,6 @@ void t3_meter_app_create(void)
     t3_bsp_init();
     vm_load();
     t3_bsp_backlight_set(s_cfg.brightness);
-
-    static lv_indev_drv_t s_meter_indev_drv;
-    lv_indev_drv_init(&s_meter_indev_drv);
-    s_meter_indev_drv.type = LV_INDEV_TYPE_POINTER;
-    s_meter_indev_drv.read_cb = meter_touch_read_cb;
-    lv_indev_drv_register(&s_meter_indev_drv);
 
     lv_obj_t *scr = lv_scr_act();
     lv_obj_set_style_bg_color(scr, lv_color_hex(0x0B1018), LV_PART_MAIN);

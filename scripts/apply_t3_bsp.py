@@ -226,8 +226,6 @@ def apply_all(project: str = "bringup") -> None:
         ("#define TCFG_LCD_PIN_DC IO_PORTA_02 // LCD DC", "#define TCFG_LCD_PIN_DC NO_CONFIG_PORT // T3: PA02 is CST816D RST"),
         ("#define TCFG_LCD_PIN_TE IO_PORTC_00 // LCD TE", "#define TCFG_LCD_PIN_TE NO_CONFIG_PORT // T3: PC00 is LCD RST"),
     ]
-    if project == "meter":
-        repls.append(("#define TCFG_BT_AI_SEL_PROTOCOL RCSP_MODE_EN // AI协议选择", "#define TCFG_BT_AI_SEL_PROTOCOL TRANS_DATA_EN // AI协议选择 (WebBLE GATT)"))
     if project in ("doom", "henner"):
         repls.extend([
             ("#define TCFG_APP_BT_EN 1 // 蓝牙模式", "#define TCFG_APP_BT_EN 0 // 蓝牙模式 disabled in t3-doom"),
@@ -253,6 +251,12 @@ def apply_all(project: str = "bringup") -> None:
     extra_app_cfg = "#define USB_PC_NO_APP_MODE                        1"
     if project == "meter":
         extra_app_cfg += "\n#define TCFG_BT_BLE_ADV_ENABLE                    1"
+        txt = replace_once(
+            txt,
+            "#define BT_AI_SEL_PROTOCOL  \t\t(AI_SEL_TRANS | AI_SEL_RCSP | AI_SEL_ALIPAY | AI_SEL_FMNA)",
+            "#define BT_AI_SEL_PROTOCOL  \t\tRCSP_MODE_EN",
+            "app_config.h (RCSP_MODE_EN)",
+        )
     txt = replace_once(
         txt,
         "#define USB_PC_NO_APP_MODE                        0",
@@ -403,6 +407,16 @@ def apply_all(project: str = "bringup") -> None:
         "#else\n#define Y_MIRROR  \t\t1",
         "cst816d.c",
     )
+    txt = replace_once(
+        txt,
+        "    if (!cst816d_upgrade()) {\n"
+        "        log_error(\"cst816d_upgrade fail!\\n\");\n"
+        "        /* ASSERT(0); */\n"
+        "    }\n",
+        "    /* T3 safety: NEVER overwrite CST816D/T flash with SDK 320x386 watch firmware */\n"
+        "    (void)cst816d_upgrade;\n",
+        "cst816d.c (disable upgrade)",
+    )
     write_lf(p, txt)
 
     # 10. apps/common/ui/lvgl_v8/lv_conf.h
@@ -550,12 +564,12 @@ def apply_all(project: str = "bringup") -> None:
     )
     write_lf(p, txt)
 
-    # 15. WebBLE GATT service (0xFFE0 / 0xFFE1 / 0xFFE2) for meter project
+    # 15. Native RCSP WebBLE GATT (0xFFE0 / 0xFFE1 / 0xFFE2 as T3_MTR) for meter project
     if project == "meter":
-        p, txt = load_base("apps/common/third_party_profile/jieli/trans_data_demo/le_trans_data.h")
+        p, txt = load_base("apps/common/third_party_profile/multi_protocol_main.c")
         txt = replace_once(
             txt,
-            "    // END\n    0x00, 0x00,",
+            "    // END\n    0x00, 0x00,\n};",
             "    // 0x0050 PRIMARY_SERVICE ffe0 (T3 ATorch WebBLE)\n"
             "    0x0a, 0x00, 0x02, 0x00, 0x50, 0x00, 0x00, 0x28, 0xe0, 0xff,\n"
             "    // 0x0051 CHARACTERISTIC ffe1 WRITE_WITHOUT_RESPONSE | WRITE | NOTIFY\n"
@@ -567,74 +581,98 @@ def apply_all(project: str = "bringup") -> None:
             "    // 0x0054 CHARACTERISTIC ffe2 WRITE_WITHOUT_RESPONSE | WRITE\n"
             "    0x0d, 0x00, 0x02, 0x00, 0x54, 0x00, 0x03, 0x28, 0x0c, 0x55, 0x00, 0xe2, 0xff,\n"
             "    // 0x0055 VALUE ffe2 WRITE_WITHOUT_RESPONSE | WRITE | DYNAMIC\n"
-            "    0x08, 0x00, 0x0c, 0x01, 0x55, 0x00, 0xe2, 0xff,\n"
-            "    // END\n    0x00, 0x00,",
-            "le_trans_data.h (0xFFE0)",
+            "    0x08, 0x00, 0x0c, 0x01, 0x55, 0x00, 0xe2, 0xff,\n\n"
+            "    // END\n    0x00, 0x00,\n};",
+            "multi_protocol_main.c (0xFFE0)",
         )
         write_lf(p, txt)
 
-        p, txt = load_base("apps/common/third_party_profile/jieli/trans_data_demo/le_trans_data.c")
+        p, txt = load_base("apps/common/third_party_profile/jieli/rcsp/adv/ble_rcsp_adv.c")
         txt = replace_once(
             txt,
-            "    offset += make_eir_packet_val(&buf[offset], offset, HCI_EIR_DATATYPE_COMPLETE_16BIT_SERVICE_UUIDS, 0xAF30, 2);",
-            "    offset += make_eir_packet_val(&buf[offset], offset, HCI_EIR_DATATYPE_COMPLETE_16BIT_SERVICE_UUIDS, 0xFFE0, 2);",
-            "le_trans_data.c (adv 0xFFE0)",
+            "int rcsp_make_set_adv_data(void)\n"
+            "{\n"
+            "    u8 i;\n"
+            "    u8 *buf = adv_data;\n"
+            "    buf[0] = 0x1E;\n"
+            "    buf[1] = 0xFF;",
+            "int rcsp_make_set_adv_data(void)\n"
+            "{\n"
+            "    u8 offset = 0;\n"
+            "    u8 *buf = adv_data;\n"
+            "    memset(buf, 0, 31);\n"
+            "    offset += make_eir_packet_val(&buf[offset], offset, HCI_EIR_DATATYPE_FLAGS, 0x06, 1);\n"
+            "    offset += make_eir_packet_val(&buf[offset], offset, HCI_EIR_DATATYPE_COMPLETE_16BIT_SERVICE_UUIDS, 0xFFE0, 2);\n"
+            "    offset += make_eir_packet_data(&buf[offset], offset, HCI_EIR_DATATYPE_COMPLETE_LOCAL_NAME, (void *)\"T3_MTR\", 6);\n"
+            "    __this->modify_flag = 0;\n"
+            "    adv_data_len = offset;\n"
+            "    app_ble_adv_data_set(rcsp_server_ble_hdl, buf, offset);\n"
+            "    app_ble_adv_data_set(rcsp_server_ble_hdl1, buf, offset);\n"
+            "    return 0;\n"
+            "}\n\n"
+            "static int rcsp_make_set_adv_data_orig_unused(void)\n"
+            "{\n"
+            "    u8 i;\n"
+            "    u8 *buf = adv_data;\n"
+            "    buf[0] = 0x1E;\n"
+            "    buf[1] = 0xFF;",
+            "ble_rcsp_adv.c (adv T3_MTR + 0xFFE0)",
         )
         txt = replace_once(
             txt,
-            "    case ATT_CHARACTERISTIC_ae02_01_CLIENT_CONFIGURATION_HANDLE:",
-            "    case 0x0053:\n"
-            "        set_ble_work_state(BLE_ST_NOTIFY_IDICATE);\n"
-            "        check_connetion_updata_deal();\n"
-            "        att_set_ccc_config(handle, buffer[0]);\n"
-            "        break;\n\n"
-            "    case 0x0052:\n"
-            "    case 0x0055:\n"
-            "        {\n"
-            "            extern void t3_ble_on_rx(const u8 *data, u16 len);\n"
-            "            t3_ble_on_rx(buffer, buffer_size);\n"
-            "        }\n"
-            "        break;\n\n"
-            "    case ATT_CHARACTERISTIC_ae02_01_CLIENT_CONFIGURATION_HANDLE:",
-            "le_trans_data.c (0xFFE1/0xFFE2 write)",
+            "    offset += make_eir_packet_data(&buf[offset], offset, HCI_EIR_DATATYPE_COMPLETE_LOCAL_NAME, (void *)edr_name, name_len);\n"
+            "    scan_rsp_data_len = offset;\n"
+            "    log_info(\"rsp_data(%d):\", offset);\n"
+            "    log_info_hexdump(buf, offset);\n"
+            "    /* ble_op_set_rsp_data(offset, buf); */\n"
+            "    app_ble_rsp_data_set(rcsp_server_ble_hdl, buf, 31);\n"
+            "    app_ble_rsp_data_set(rcsp_server_ble_hdl1, buf, 31);",
+            "    static const u8 ffe0_uuid_16bit[] = {0xE0, 0xFF};\n"
+            "    offset += make_eir_packet_data(&buf[offset], offset, HCI_EIR_DATATYPE_COMPLETE_16BIT_SERVICE_UUIDS, (void *)ffe0_uuid_16bit, 2);\n"
+            "    offset += make_eir_packet_data(&buf[offset], offset, HCI_EIR_DATATYPE_COMPLETE_LOCAL_NAME, (void *)\"T3_MTR\", 6);\n"
+            "    scan_rsp_data_len = offset;\n"
+            "    log_info(\"rsp_data(%d):\", offset);\n"
+            "    log_info_hexdump(buf, offset);\n"
+            "    app_ble_rsp_data_set(rcsp_server_ble_hdl, buf, offset);\n"
+            "    app_ble_rsp_data_set(rcsp_server_ble_hdl1, buf, offset);",
+            "ble_rcsp_adv.c (rsp T3_MTR + 0xFFE0)",
+        )
+        write_lf(p, txt)
+
+        p, txt = load_base("apps/common/third_party_profile/jieli/rcsp/ble_rcsp_server.c")
+        txt = replace_once(
+            txt,
+            "void bt_rcsp_custom_att_write_callback(void *hdl, hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, uint8_t *buffer, uint16_t buffer_size)\n{",
+            "static u8 s_t3_ffe1_notify_en = 0;\n\n"
+            "void bt_rcsp_custom_att_write_callback(void *hdl, hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, uint8_t *buffer, uint16_t buffer_size)\n"
+            "{\n"
+            "    if (att_handle == 0x0053) {\n"
+            "        check_connetion_updata_deal(connection_handle);\n"
+            "        s_t3_ffe1_notify_en = (buffer && buffer_size > 0 && buffer[0]) ? 1U : 0U;\n"
+            "    } else if (att_handle == 0x0052 || att_handle == 0x0055) {\n"
+            "        extern void t3_ble_on_rx(const u8 *data, u16 len);\n"
+            "        t3_ble_on_rx(buffer, buffer_size);\n"
+            "    }",
+            "ble_rcsp_server.c (0xFFE1/0xFFE2 write)",
         )
         txt = replace_once(
             txt,
-            "    name_p = bt_get_local_name();\n"
-            "    gap_device_name_len = strlen(name_p);\n"
-            "    if (gap_device_name_len > BT_NAME_LEN_MAX - ext_name_len) {\n"
-            "        gap_device_name_len = BT_NAME_LEN_MAX - ext_name_len;\n"
-            "    }\n\n"
-            "    memcpy(gap_device_name, name_p, gap_device_name_len);\n\n"
-            "#if DOUBLE_BT_SAME_NAME == 0\n"
-            "    //增加后缀，区分名字\n"
-            "    memcpy(&gap_device_name[gap_device_name_len], \"(BLE)\", ext_name_len);\n"
-            "    gap_device_name_len += ext_name_len;\n"
-            "#endif",
-            "    name_p = \"T3_MTR\";\n"
-            "    gap_device_name_len = 6;\n"
-            "    memcpy(gap_device_name, name_p, 6);",
-            "le_trans_data.c (name T3_MTR)",
-        )
-        txt = replace_once(
-            txt,
-            "void bt_ble_init(void)",
+            "uint16_t bt_rcsp_custom_att_read_callback(void *hdl, hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, uint8_t *buffer, uint16_t buffer_size)",
             "int t3_ble_gatt_notify(const u8 *data, u16 len)\n"
             "{\n"
-            "    if (con_handle == 0 || !data || len == 0) {\n"
+            "    if (!s_t3_ffe1_notify_en || !data || len == 0) {\n"
             "        return -1;\n"
             "    }\n"
-            "    return app_send_user_data(0x0052, (u8 *)data, len, ATT_OP_AUTO_READ_CCC);\n"
-            "}\n\n"
-            "void t3_ble_beacon_update(u8 enable, const u8 *payload16)\n"
-            "{\n"
-            "    (void)payload16;\n"
-            "    if (con_handle == 0) {\n"
-            "        bt_ble_adv_enable(enable);\n"
+            "    if (app_ble_get_hdl_con_handle(rcsp_server_ble_hdl)) {\n"
+            "        return app_ble_att_send_data(rcsp_server_ble_hdl, 0x0052, (u8 *)data, len, ATT_OP_NOTIFY);\n"
             "    }\n"
+            "    if (app_ble_get_hdl_con_handle(rcsp_server_ble_hdl1)) {\n"
+            "        return app_ble_att_send_data(rcsp_server_ble_hdl1, 0x0052, (u8 *)data, len, ATT_OP_NOTIFY);\n"
+            "    }\n"
+            "    return -1;\n"
             "}\n\n"
-            "void bt_ble_init(void)",
-            "le_trans_data.c (t3_ble_gatt_notify)",
+            "uint16_t bt_rcsp_custom_att_read_callback(void *hdl, hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, uint8_t *buffer, uint16_t buffer_size)",
+            "ble_rcsp_server.c (t3_ble_gatt_notify)",
         )
         write_lf(p, txt)
 
